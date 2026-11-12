@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login · Swarn Jyoti Jewellers</title>
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <style>
+    /* Fallback styles in case global.css fails to load */
+    .login-wrapper {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #102440; display: flex; align-items: center; justify-content: center;
+      background-image: radial-gradient(circle at center, #183152 0%, #102440 100%);
+    }
+    .login-card {
+      background: #FFFDF9; width: 100%; max-width: 420px; padding: 2.5rem;
+      border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      border-top: 5px solid #D5A63C;
+    }
+    .login-header { text-align: center; margin-bottom: 2rem; }
+    .logo-icon-large {
+      width: 80px; height: 80px; margin: 0 auto 1rem;
+      background: #D5A63C; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; padding: 5px;
+    }
+    .logo-icon-large img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .login-header h2 { font-size: 1.5rem; color: #102440; margin-bottom: 0.2rem; }
+    .login-header p { color: #6b7b94; font-size: 0.85rem; text-transform: uppercase; }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: #3d4e66; display: block; margin-bottom: 0.4rem; }
+    .form-control { width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid #dce2ea; background: #FFFDF9; font-size: 0.95rem; color: #102440; }
+    .form-control:focus { outline: none; border-color: #D5A63C; box-shadow: 0 0 0 3px rgba(213, 166, 60, 0.15); }
+    .btn-gold { display: flex; align-items: center; justify-content: center; background: #D5A63C; color: #102440; font-weight: 600; border: none; border-radius: 12px; padding: 0.9rem 1.3rem; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 1rem; }
+    .login-links { text-align: center; margin-top: 1.5rem; }
+    .login-links a { color: #6b7b94; text-decoration: none; font-size: 0.85rem; margin: 0 10px; }
+    .login-links a:hover { color: #D5A63C; }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      
+      <div class="login-header">
+        <div class="logo-icon-large">
+          <img src="assets/image/icon-sj.jpg" alt="Swarn Jyoti Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\'><rect width=\'80\' height=\'80\' fill=\'%23D5A63C\'/><text x=\'50%\' y=\'55%\' font-size=\'30\' text-anchor=\'middle\' fill=\'%23102440\' font-weight=\'bold\'>SJ</text></svg>'" />
+        </div>
+        <h2>Swarn Jyoti Jewellers</h2>
+        <p id="login-subtitle">Billing Software</p>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="form-group">
+          <label>User Name</label>
+          <input type="text" id="login-id" class="form-control" placeholder="Enter your name" autocomplete="off" required />
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="login-mobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="off" required />
+        </div>
+        <button type="submit" class="btn-gold login-btn">Login</button>
+        
+        <div class="login-links">
+          <a href="#" id="link-signup">Create New Account</a>
+          <br><br>
+          <!-- EMERGENCY RESET BUTTON -->
+          <a href="#" id="emergency-reset" style="color: #dc3545; font-size: 0.75rem; opacity: 0.7;">Clear Data & Reset App</a>
+        </div>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="signup-form" style="display: none;">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signup-id" class="form-control" placeholder="Enter your name" autocomplete="off" required />
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="signup-mobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="off" required />
+        </div>
+        <button type="submit" class="btn-gold login-btn">Create Account</button>
+        
+        <div class="login-links">
+          <a href="#" id="link-back-login">Already have an account? Login</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- PURE JAVASCRIPT LOGIC (NO EXTERNAL DEPENDENCIES) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const subtitle = document.getElementById('login-subtitle');
+
+      // 1. EMERGENCY RESET (In case your browser is stuck with old data)
+      document.getElementById('emergency-reset').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(confirm('Are you sure you want to clear all saved login data and reset the app?')) {
+          localStorage.removeItem('sj_user');
+          localStorage.removeItem('sj_logged_in');
+          window.location.reload();
+        }
+      });
+
+      // 2. Check if already logged in
+      if (localStorage.getItem('sj_logged_in') === 'true') {
+        window.location.href = 'dashboard.html'; 
+        return;
+      }
+
+      // 3. Check if a user account exists
+      const savedUser = localStorage.getItem('sj_user') ? JSON.parse(localStorage.getItem('sj_user')) : null;
+
+      if (!savedUser) {
+        // Force Signup if no account exists
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        subtitle.innerText = "Create your account first";
+      } else {
+        // Pre-fill name if account exists
+        document.getElementById('login-id').value = savedUser.name || '';
+      }
+
+      // 4. Toggle Forms
+      document.getElementById('link-signup').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        subtitle.innerText = "Create Master Account";
+      });
+
+      document.getElementById('link-back-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        subtitle.innerText = "Billing Software";
+      });
+
+      // 5. SIGNUP LOGIC
+      signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signup-id').value.trim();
+        const mobile = document.getElementById('signup-mobile').value.trim();
+
+        if (name.length < 2) { alert('Name must be at least 2 characters.'); return; }
+        if (mobile.length < 10) { alert('Please enter a valid 10-digit mobile number.'); return; }
+
+        localStorage.setItem('sj_user', JSON.stringify({ name, mobile }));
+
+        alert('Account created successfully! Please login.');
+        signupForm.reset();
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        subtitle.innerText = "Billing Software";
+        document.getElementById('login-id').value = name;
+      });
+
+      // 6. LOGIN LOGIC
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('login-id').value.trim();
+        const mobileInput = document.getElementById('login-mobile').value.trim();
+        const currentUser = localStorage.getItem('sj_user') ? JSON.parse(localStorage.getItem('sj_user')) : null;
+
+        if (!currentUser) {
+          alert('No account found. Please create an account first.');
+          return;
+        }
+
+        if (nameInput === currentUser.name && mobileInput === currentUser.mobile) {
+          localStorage.setItem('sj_logged_in', 'true');
+          alert('Login successful! Redirecting...');
+          window.location.href = 'dashboard.html';
+        } else {
+          alert('Invalid Name or Mobile Number. Please try again.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

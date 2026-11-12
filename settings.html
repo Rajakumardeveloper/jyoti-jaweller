@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings · Swarn Jyoti Jewellers</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+
+  <style>
+    /* --- PREMIUM SETTINGS LAYOUT --- */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .settings-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid #eaedf2;
+      margin-bottom: 24px;
+    }
+
+    /* Full-width cards inside the 2-col grid */
+    .span-2 { grid-column: 1 / -1; }
+
+    .settings-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eaedf2;
+    }
+
+    .settings-card-header i {
+      color: var(--gold);
+      font-size: 1.2rem;
+      background: var(--pastel-champagne);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .settings-card-header h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #5d6f88;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #eaedf2;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--navy);
+      background: var(--soft-grey);
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(213, 166, 60, 0.1);
+    }
+
+    /* Metal Rates Grid */
+    .metal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .metal-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       RATE MANAGEMENT SUB-SECTIONS
+       ═══════════════════════════════════════════════ */
+    .rates-subsection {
+      margin-top: 1.8rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed #eaedf2;
+    }
+    .rates-subsection:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+    .rates-subsection-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .rates-subsection-title i {
+      color: var(--gold);
+      font-size: 0.85rem;
+    }
+    .rates-subsection-title .tag {
+      margin-left: auto;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #6b7b94;
+      background: var(--soft-grey);
+      padding: 3px 8px;
+      border-radius: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tunch table */
+    .tunch-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .tunch-table th {
+      text-align: left;
+      padding: 6px 8px 10px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      color: #5d6f88;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #eaedf2;
+    }
+    .tunch-table td {
+      padding: 6px 4px;
+      vertical-align: middle;
+    }
+    .tunch-table td:first-child { width: 30%; padding-left: 8px; }
+    .tunch-table td input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 2px solid #eaedf2;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: var(--soft-grey);
+      color: var(--navy);
+      box-sizing: border-box;
+      transition: all 0.2s;
+    }
+    .tunch-table td input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(213, 166, 60, 0.1);
+    }
+    .tunch-label {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+    .tunch-label small {
+      display: block;
+      font-size: 0.68rem;
+      color: #8a9bb0;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .metal-grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 500px) {
+      .metal-grid, .metal-grid-3 { grid-template-columns: 1fr; }
+      .tunch-table td:first-child { width: 40%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-layout">
+    <aside class="sidebar">
+      <div class="logo"><img src="assets/image/icon-sj.jpg" alt="Logo" /><div class="logo-text">Swarn Jyoti <span>Jewellers</span></div></div>
+      <nav>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="invoice.html" class="nav-item"><i class="fas fa-file-invoice"></i> Invoice Maker</a>
+        <a href="paid-due.html" class="nav-item"><i class="fas fa-receipt"></i> Paid & Due</a>
+        <a href="stock.html" class="nav-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="settings.html" class="nav-item active"><i class="fas fa-cog"></i> Settings</a>
+      </nav>
+      <div class="sidebar-footer"><p>© 2026 Swarn Jyoti</p><button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1><i class="fas fa-cog"></i> Settings</h1>
+          <p style="color: #6b7b94; font-size: 0.9rem; margin-top: 4px;">Manage your business profile, metal rates, and data.</p>
+        </div>
+        <button class="btn-gold" id="btn-save-all"><i class="fas fa-save"></i> Save All Settings</button>
+      </div>
+
+      <div class="settings-grid">
+
+        <!-- ═══════════════════════════════════════════════
+             RATES CARD — FULL WIDTH, ALL PURITIES
+             ═══════════════════════════════════════════════ -->
+        <div class="settings-card span-2">
+          <div class="settings-card-header">
+            <i class="fas fa-gem"></i>
+            <h3>Jewellery Rate Management</h3>
+          </div>
+          <p style="font-size:0.85rem; color:#6b7b94; margin: -0.5rem 0 1.5rem;">Set every purity rate. These are auto-filled in the Invoice Maker when you pick a purity. Rates are per gram unless marked otherwise.</p>
+
+          <!-- ── GOLD RATES ── -->
+          <div class="rates-subsection">
+            <div class="rates-subsection-title">
+              <i class="fas fa-coins"></i> Gold Ornaments
+              <span class="tag">₹ / gram</span>
+            </div>
+            <div class="metal-grid-3">
+              <div class="form-group">
+                <label>24K Gold</label>
+                <input type="number" id="rate-24k" class="form-control" step="1" min="0" />
+              </div>
+              <div class="form-group">
+                <label>22K Gold</label>
+                <input type="number" id="rate-22k" class="form-control" step="1" min="0" />
+              </div>
+              <div class="form-group">
+                <label>20K Gold</label>
+                <input type="number" id="rate-20k" class="form-control" step="1" min="0" />
+              </div>
+              <div class="form-group">
+                <label>18K Gold</label>
+                <input type="number" id="rate-18k" class="form-control" step="1" min="0" />
+              </div>
+              <div class="form-group">
+                <label>14K Gold</label>
+                <input type="number" id="rate-14k" class="form-control" step="1" min="0" />
+              </div>
+              <div class="form-group">
+                <label>9K Gold</label>
+                <input type="number" id="rate-9k" class="form-control" step="1" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SILVER 999 ── -->
+          <div class="rates-subsection">
+            <div class="rates-subsection-title">
+              <i class="fas fa-ring"></i> Silver 999
+              <span class="tag">₹ / gram</span>
+            </div>
+            <div class="metal-grid">
+              <div class="form-group">
+                <label>Silver 999 Rate</label>
+                <input type="number" id="rate-silver999" class="form-control" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SILVER ORNAMENTS ── -->
+          <div class="rates-subsection">
+            <div class="rates-subsection-title">
+              <i class="fas fa-ring"></i> Silver Ornaments
+              <span class="tag">₹ / gram</span>
+            </div>
+            <div class="metal-grid">
+              <div class="form-group">
+                <label>Silver Ornament 999</label>
+                <input type="number" id="rate-silver-orn-999" class="form-control" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Silver Ornament 50T</label>
+                <input type="number" id="rate-silver-orn-50t" class="form-control" step="0.01" min="0" />
+              </div>
+            </div>
+
+            <div style="margin-top: 1.2rem;">
+              <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #5d6f88; letter-spacing: 0.05em; margin-bottom: 0.6rem;">Tunch-wise Rate + Wastage</div>
+              <table class="tunch-table">
+                <thead>
+                  <tr>
+                    <th>Tunch</th>
+                    <th>Rate / gram (₹)</th>
+                    <th>Wastage (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tunch-label">Tunch 50</span></td>
+                    <td><input type="number" id="rate-tunch-50" step="0.01" min="0" placeholder="0" /></td>
+                    <td><input type="number" id="wastage-tunch-50" step="0.1" min="0" placeholder="0" /></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tunch-label">Tunch 60</span></td>
+                    <td><input type="number" id="rate-tunch-60" step="0.01" min="0" placeholder="0" /></td>
+                    <td><input type="number" id="wastage-tunch-60" step="0.1" min="0" placeholder="0" /></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tunch-label">Tunch 70</span></td>
+                    <td><input type="number" id="rate-tunch-70" step="0.01" min="0" placeholder="0" /></td>
+                    <td><input type="number" id="wastage-tunch-70" step="0.1" min="0" placeholder="0" /></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tunch-label">Tunch 80</span></td>
+                    <td><input type="number" id="rate-tunch-80" step="0.01" min="0" placeholder="0" /></td>
+                    <td><input type="number" id="wastage-tunch-80" step="0.1" min="0" placeholder="0" /></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tunch-label">Tunch 92.5<small>fine silver</small></span></td>
+                    <td><input type="number" id="rate-tunch-925" step="0.01" min="0" placeholder="0" /></td>
+                    <td><input type="number" id="wastage-tunch-925" step="0.1" min="0" placeholder="0" /></td>
+                  </tr>
+                </tbody>
+              </table>
+              <p style="font-size: 0.75rem; color: #8a9bb0; margin: 0.7rem 0 0;">
+                <i class="fas fa-info-circle"></i>
+                Effective invoice rate = Rate × (1 + Wastage% / 100)
+              </p>
+            </div>
+          </div>
+
+          <!-- ── GEMSTONE ── -->
+          <div class="rates-subsection">
+            <div class="rates-subsection-title">
+              <i class="fas fa-gem"></i> Gemstone
+              <span class="tag">₹ / carat</span>
+            </div>
+            <div class="metal-grid">
+              <div class="form-group">
+                <label>Ordinary Gemstone Rate</label>
+                <input type="number" id="rate-gems-ordinary" class="form-control" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             BUSINESS INFORMATION
+             ═══════════════════════════════════════════════ -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <i class="fas fa-store"></i>
+            <h3>Business Information</h3>
+          </div>
+
+          <div class="form-group">
+            <label>Business Name</label>
+            <input type="text" id="set-name" class="form-control" placeholder="Enter business name" />
+          </div>
+          <div class="form-group">
+            <label>GSTIN</label>
+            <input type="text" id="set-gstin" class="form-control" placeholder="Enter GSTIN" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="set-phone" class="form-control" placeholder="Enter phone number" />
+          </div>
+          <div class="form-group">
+            <label>Shop Address</label>
+            <textarea id="set-address" class="form-control" rows="3" placeholder="Enter full address"></textarea>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECURITY & PASSWORD
+             ═══════════════════════════════════════════════ -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <i class="fas fa-lock"></i>
+            <h3>Security & Password</h3>
+          </div>
+          <p style="font-size:0.85rem; color:#6b7b94; margin-bottom:1.5rem;">Update the password used to log into this software.</p>
+
+          <div class="form-group">
+            <label>New Password *</label>
+            <input type="password" id="set-new-pass" class="form-control" placeholder="Enter new password" />
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password *</label>
+            <input type="password" id="set-confirm-pass" class="form-control" placeholder="Confirm new password" />
+          </div>
+          <button class="btn-primary" id="btn-update-pass" style="width:100%; margin-top: 5px;"><i class="fas fa-key"></i> Update Password</button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             DATA MANAGEMENT
+             ═══════════════════════════════════════════════ -->
+        <div class="settings-card span-2">
+          <div class="settings-card-header">
+            <i class="fas fa-database"></i>
+            <h3>Data Management</h3>
+          </div>
+          <p style="font-size:0.85rem; color:#6b7b94; margin-bottom:1.5rem;">Download a full backup of your data or restore from a previous file.</p>
+
+          <button class="btn-gold" id="btn-export" style="width: 100%; margin-bottom: 12px;">
+            <i class="fas fa-download"></i> Download Full Backup (data.json)
+          </button>
+
+          <input type="file" id="import-file" accept=".json" style="display: none;" />
+          <button class="btn-primary" id="btn-import-trigger" style="width: 100%; background: var(--pastel-lavender); color: var(--navy); border: 1px solid #d1cbea;">
+            <i class="fas fa-upload"></i> Import Data from Backup
+          </button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ─────────────── 1. LOAD ─────────────── */
+      const dbData = DB.getData();
+      const settings = dbData.settings || {};
+      const rates = settings.metalPrices || {};
+      const rc = settings.rateConfig || {};
+
+      // Business info
+      document.getElementById('set-name').value = settings.businessName || "SWARN JYOTI JEWELLERS";
+      document.getElementById('set-gstin').value = settings.gstin || "10CQAPS4738P1ZH";
+      document.getElementById('set-phone').value = settings.phone || "9939332968";
+      document.getElementById('set-address').value = settings.address || "Soni Gali, Sasamusa, Gopalganj, Bihar";
+
+      // Gold — prefer rateConfig, fallback to metalPrices, then defaults
+      const gold = rc.goldOrnaments || {};
+      document.getElementById('rate-24k').value = gold['24K'] ?? rates['24K'] ?? 6200;
+      document.getElementById('rate-22k').value = gold['22K'] ?? rates['22K'] ?? 5800;
+      document.getElementById('rate-20k').value = gold['20K'] ?? rates['20K'] ?? 5300;
+      document.getElementById('rate-18k').value = gold['18K'] ?? rates['18K'] ?? 4800;
+      document.getElementById('rate-14k').value = gold['14K'] ?? rates['14K'] ?? 3700;
+      document.getElementById('rate-9k').value  = gold['9K']  ?? rates['9K']  ?? 2400;
+
+      // Silver 999
+      document.getElementById('rate-silver999').value = rc.silver999?.rate ?? rates['Silver 999'] ?? 75;
+
+      // Silver Ornaments
+      const so = rc.silverOrnaments || {};
+      document.getElementById('rate-silver-orn-999').value = so['999']?.rate ?? rates['Silver 999'] ?? 75;
+      document.getElementById('rate-silver-orn-50t').value = so['50T']?.rate ?? 0;
+
+      const tunch = so.tunch || {};
+      document.getElementById('rate-tunch-50').value = tunch['50']?.rate ?? 0;
+      document.getElementById('wastage-tunch-50').value = tunch['50']?.wastage ?? 0;
+      document.getElementById('rate-tunch-60').value = tunch['60']?.rate ?? 0;
+      document.getElementById('wastage-tunch-60').value = tunch['60']?.wastage ?? 0;
+      document.getElementById('rate-tunch-70').value = tunch['70']?.rate ?? 0;
+      document.getElementById('wastage-tunch-70').value = tunch['70']?.wastage ?? 0;
+      document.getElementById('rate-tunch-80').value = tunch['80']?.rate ?? (rates['Silver Ornaments'] || 0);
+      document.getElementById('wastage-tunch-80').value = tunch['80']?.wastage ?? 0;
+      document.getElementById('rate-tunch-925').value = tunch['92.5']?.rate ?? 0;
+      document.getElementById('wastage-tunch-925').value = tunch['92.5']?.wastage ?? 0;
+
+      // Gems
+      document.getElementById('rate-gems-ordinary').value = rc.gems?.ordinary?.rate ?? 0;
+
+      /* ─────────────── 2. SAVE ─────────────── */
+      document.getElementById('btn-save-all').addEventListener('click', () => {
+        const num = (id) => {
+          const v = parseFloat(document.getElementById(id).value);
+          return isFinite(v) ? v : 0;
+        };
+
+        const goldRates = {
+          '24K': num('rate-24k'),
+          '22K': num('rate-22k'),
+          '20K': num('rate-20k'),
+          '18K': num('rate-18k'),
+          '14K': num('rate-14k'),
+          '9K':  num('rate-9k')
+        };
+
+        const silver999Rate = num('rate-silver999');
+        const silverOrn999Rate = num('rate-silver-orn-999');
+        const silverOrn50tRate = num('rate-silver-orn-50t');
+
+        const tunchRates = {
+          '50':   { rate: num('rate-tunch-50'),   wastage: num('wastage-tunch-50') },
+          '60':   { rate: num('rate-tunch-60'),   wastage: num('wastage-tunch-60') },
+          '70':   { rate: num('rate-tunch-70'),   wastage: num('wastage-tunch-70') },
+          '80':   { rate: num('rate-tunch-80'),   wastage: num('wastage-tunch-80') },
+          '92.5': { rate: num('rate-tunch-925'),  wastage: num('wastage-tunch-925') }
+        };
+
+        const gemsRate = num('rate-gems-ordinary');
+
+        const updatedSettings = {
+          businessName: document.getElementById('set-name').value,
+          gstin: document.getElementById('set-gstin').value,
+          phone: document.getElementById('set-phone').value,
+          address: document.getElementById('set-address').value,
+
+          // Legacy flat map — kept in sync so any code that still reads
+          // `metalPrices` continues to see fresh values
+          metalPrices: {
+            '24K': goldRates['24K'],
+            '22K': goldRates['22K'],
+            '18K': goldRates['18K'],
+            '14K': goldRates['14K'],
+            '9K':  goldRates['9K'],
+            'Silver 999': silver999Rate,
+            'Silver Ornaments': silverOrn999Rate,
+            'Gold Ornaments': goldRates['22K']
+          },
+
+          // Structured config — used by invoice.html
+          rateConfig: {
+            updatedAt: new Date().toISOString(),
+
+            silver999: { rate: silver999Rate },
+
+            silverOrnaments: {
+              '999': { rate: silverOrn999Rate },
+              '50T': { rate: silverOrn50tRate },
+              tunch: tunchRates
+            },
+
+            goldOrnaments: goldRates,
+
+            gems: {
+              ordinary: { rate: gemsRate, basis: 'carat' }
+            }
+          }
+        };
+
+        DB.updateSettings(updatedSettings);
+        showAlert("All settings saved successfully!", "success");
+      });
+
+      /* ─────────────── 3. PASSWORD ─────────────── */
+      document.getElementById('btn-update-pass').addEventListener('click', () => {
+        const newPass = document.getElementById('set-new-pass').value;
+        const confirmPass = document.getElementById('set-confirm-pass').value;
+
+        if (newPass.length < 3) { showAlert("Password must be at least 3 characters.", "error"); return; }
+        if (newPass !== confirmPass) { showAlert("Passwords do not match.", "error"); return; }
+
+        const savedUser = JSON.parse(localStorage.getItem('sj_user'));
+        if (savedUser) {
+          savedUser.pass = newPass;
+          localStorage.setItem('sj_user', JSON.stringify(savedUser));
+          showAlert("Password updated successfully!", "success");
+          document.getElementById('set-new-pass').value = '';
+          document.getElementById('set-confirm-pass').value = '';
+        } else {
+          showAlert("User account not found.", "error");
+        }
+      });
+
+      /* ─────────────── 4. BACKUP / RESTORE ─────────────── */
+      document.getElementById('btn-export').addEventListener('click', () => DB.exportBackup());
+
+      const importFile = document.getElementById('import-file');
+      document.getElementById('btn-import-trigger').addEventListener('click', () => importFile.click());
+
+      importFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        DB.importBackup(file, (success, message) => {
+          if (success) showAlert(message, "success", () => window.location.reload());
+          else showAlert(message, "error");
+        });
+      });
+    });
+  </script>
+</body>
+</html>

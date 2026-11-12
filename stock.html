@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock · Swarn Jyoti Jewellers</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <style>
+    /* ═════ SUMMARY CARDS ═════ */
+    .stock-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stock-summary-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid #eaedf2;
+      border-left: 4px solid var(--gold);
+    }
+    .stock-summary-card.gold   { border-left-color: #D5A63C; }
+    .stock-summary-card.silver { border-left-color: #8a9bb0; }
+    .stock-summary-card.value  { border-left-color: #28a745; }
+    .stock-summary-card.status { border-left-color: #7a4fbf; }
+    .stock-summary-label {
+      font-size: 0.7rem; text-transform: uppercase;
+      color: #6b7b94; font-weight: 700; letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+    .stock-summary-value {
+      font-size: 1.25rem; font-weight: 800; color: var(--navy); line-height: 1.2;
+    }
+    .stock-summary-sub {
+      font-size: 0.68rem; color: #8a9bb0; margin-top: 3px;
+    }
+    @media (max-width: 1000px) { .stock-summary { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px)  { .stock-summary { grid-template-columns: 1fr; } }
+
+    /* ═════ ADD FORM ═════ */
+    .add-stock-form {
+      display: grid;
+      grid-template-columns: 2fr 0.9fr 0.9fr 1.2fr 0.9fr 1.1fr 0.9fr auto;
+      gap: 8px;
+      margin-bottom: 1rem;
+      background: var(--soft-grey);
+      padding: 1rem 1.2rem;
+      border-radius: var(--radius);
+      border: 1px solid #dce2ea;
+      align-items: end;
+    }
+    .add-stock-form .field { display: flex; flex-direction: column; gap: 3px; }
+    .add-stock-form label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      color: #6b7b94; letter-spacing: 0.3px; margin-left: 2px;
+    }
+    .add-stock-form input,
+    .add-stock-form select {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #dce2ea;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: white;
+      color: var(--navy);
+      box-sizing: border-box;
+    }
+    .add-stock-form input:focus,
+    .add-stock-form select:focus {
+      outline: none; border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(213,166,60,0.15);
+    }
+    .rate-preview {
+      font-size: 0.68rem; color: var(--gold);
+      font-weight: 700; margin-top: 2px; height: 14px; line-height: 14px;
+    }
+    .btn-add {
+      padding: 0.55rem 1rem;
+      border: none; border-radius: 8px;
+      background: var(--gold); color: var(--navy);
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: 0.15s;
+      align-self: end; height: 36px;
+    }
+    .btn-add:hover { background: #c99830; }
+    .btn-clear {
+      padding: 0.55rem 0.7rem;
+      border: 1px solid #dce2ea; border-radius: 8px;
+      background: white; color: #6b7b94;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: 0.15s;
+      align-self: end; height: 36px;
+    }
+    .btn-clear:hover { border-color: var(--gold); color: var(--gold); }
+    @media (max-width: 1100px) {
+      .add-stock-form { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .add-stock-form { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 500px) {
+      .add-stock-form { grid-template-columns: 1fr; }
+    }
+
+    /* ═════ FILTER BAR ═════ */
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
+      gap: 8px;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .filter-bar input,
+    .filter-bar select {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #dce2ea; border-radius: 8px;
+      font-family: var(--font-body); font-size: 13px;
+      background: white; color: var(--navy);
+      box-sizing: border-box;
+    }
+    .filter-bar input:focus,
+    .filter-bar select:focus { outline: none; border-color: var(--gold); }
+    .filter-btn {
+      padding: 0.55rem 0.7rem;
+      border: 1px solid #dce2ea; border-radius: 8px;
+      background: white; color: var(--navy);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: 0.15s;
+      display: inline-flex; align-items: center; gap: 4px;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+    @media (max-width: 900px) {
+      .filter-bar { grid-template-columns: 1fr 1fr 1fr; }
+      .filter-bar input { grid-column: 1 / -1; }
+    }
+    @media (max-width: 500px) {
+      .filter-bar { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ═════ BADGES ═════ */
+    .badge-gold { background: #FFF2DD; color: #7a5a00; border: 1px solid #f2e0b8; }
+    .badge-silver { background: #eef0f5; color: #4a5568; border: 1px solid #d9dde6; }
+    .badge-status-instock  { background: #E4F5E9; color: #1b6b3f; }
+    .badge-status-reserved { background: #FFF2DD; color: #7a5a00; }
+    .badge-status-sold     { background: #eef0f5; color: #4a5568; }
+
+    /* ═════ TABLE ═════ */
+    .table-wrapper { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid #eaedf2; margin-bottom: 2rem; overflow-x: auto; }
+    table.stock-table { width: 100%; min-width: 980px; border-collapse: collapse; font-size: 0.82rem; }
+    table.stock-table th {
+      position: sticky; top: 0; z-index: 2;
+      text-align: left; padding: 10px 10px;
+      background: var(--soft-grey); font-weight: 700;
+      font-size: 0.65rem; text-transform: uppercase;
+      color: #5d6f88; border-bottom: 1px solid #dce2ea;
+      letter-spacing: 0.03em; white-space: nowrap;
+      cursor: pointer; user-select: none;
+    }
+    table.stock-table th:hover { color: var(--navy); background: #e8edf5; }
+    table.stock-table th .sort-ind { opacity: 0.3; margin-left: 4px; font-size: 0.6rem; }
+    table.stock-table th.sort-active .sort-ind { opacity: 1; color: var(--gold); }
+    table.stock-table td { padding: 9px 10px; border-bottom: 1px solid #f0f2f5; color: var(--navy); vertical-align: middle; }
+    table.stock-table tr:hover td { background: var(--warm-white); }
+    table.stock-table tr.selected td { background: #FFF9EE; }
+    table.stock-table .num { text-align: right; white-space: nowrap; }
+    table.stock-table .actions-cell { text-align: center; white-space: nowrap; }
+    table.stock-table .cb-cell { text-align: center; width: 36px; }
+    table.stock-table input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer; accent-color: var(--gold);
+    }
+
+    /* Action buttons */
+    .btn-action {
+      background: transparent; border: none; cursor: pointer;
+      font-size: 0.95rem; padding: 4px 6px; border-radius: 4px;
+      transition: 0.15s; margin: 0 1px;
+    }
+    .btn-view   { color: #1e466e; } .btn-view:hover   { color: var(--gold); background: #FFF9EE; }
+    .btn-edit-stock { color: #D5A63C; } .btn-edit-stock:hover { color: #b5892a; background: #FFF9EE; }
+    .btn-toggle-sold { color: #7a4fbf; } .btn-toggle-sold:hover { color: #5a33a3; background: #EDEBFA; }
+    .btn-dup    { color: #6b7b94; } .btn-dup:hover    { color: var(--navy); background: #eef0f5; }
+    .btn-delete-stock { color: #dc3545; } .btn-delete-stock:hover { color: #a71d2a; background: #FEF2F2; }
+
+    /* ═════ EMPTY STATE ═════ */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #8a9bb0; }
+    .empty-state i { font-size: 2.5rem; color: #dce2ea; display: block; margin-bottom: 12px; }
+    .empty-state p { margin: 0 0 6px; font-size: 0.95rem; color: #6b7b94; }
+    .empty-state small { font-size: 0.8rem; }
+
+    /* ═════ BULK ACTIONS BAR ═════ */
+    .bulk-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--navy); color: white;
+      padding: 10px 16px; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(16,36,64,0.35);
+      display: flex; align-items: center; gap: 10px;
+      z-index: 500; transition: transform 0.25s ease;
+      font-size: 0.85rem;
+    }
+    .bulk-bar.visible { transform: translateX(-50%) translateY(0); }
+    .bulk-bar .bulk-count { font-weight: 700; color: var(--gold); }
+    .bulk-bar button {
+      padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px; background: rgba(255,255,255,0.1);
+      color: white; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: 0.15s;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .bulk-bar button:hover { background: rgba(255,255,255,0.2); }
+    .bulk-bar button.danger { background: rgba(220,53,69,0.25); border-color: rgba(220,53,69,0.5); }
+    .bulk-bar button.danger:hover { background: #dc3545; }
+
+    /* ═════ MODALS ═════ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(16,36,64,0.7);
+      backdrop-filter: blur(3px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 9999; padding: 20px; box-sizing: border-box;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: white; width: 100%; max-width: 500px;
+      border-radius: var(--radius); padding: 1.8rem 2rem;
+      border-top: 5px solid var(--gold);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-height: 92vh; overflow-y: auto;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--navy); margin: 0; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; color: #6b7b94; cursor: pointer; line-height: 1; }
+    .form-group { margin-bottom: 0.9rem; }
+    .form-group label {
+      display: block; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; color: #5d6f88;
+      letter-spacing: 0.3px; margin-bottom: 5px;
+    }
+    .form-control {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #dce2ea; border-radius: 8px;
+      font-family: var(--font-body); font-size: 13px;
+      color: var(--navy); background: white; box-sizing: border-box;
+    }
+    .form-control[readonly] { background: #f0f2f5; cursor: not-allowed; }
+    .form-control:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(213,166,60,0.12); }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* View modal detail grid */
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 1rem;
+    }
+    .detail-item {
+      padding: 8px 10px;
+      background: var(--soft-grey);
+      border-radius: 8px;
+    }
+    .detail-item-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      color: #6b7b94; margin-bottom: 2px; letter-spacing: 0.3px;
+    }
+    .detail-item-value {
+      font-size: 0.9rem; font-weight: 700; color: var(--navy);
+      word-break: break-word;
+    }
+    .detail-header {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 0.8rem; margin-bottom: 1rem;
+      border-bottom: 1px solid #eaedf2;
+    }
+    .detail-header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--pastel-champagne);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: var(--gold); flex-shrink: 0;
+    }
+    .detail-header-name { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin: 0; }
+    .detail-header-sub { font-size: 0.75rem; color: #8a9bb0; margin-top: 2px; }
+
+    .modal-actions {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 1rem;
+    }
+    .modal-actions button {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid #dce2ea;
+      background: white; color: var(--navy);
+      font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: 0.15s; flex: 1; min-width: 90px; justify-content: center;
+    }
+    .modal-actions button:hover { border-color: var(--gold); color: var(--gold); }
+    .modal-actions button.danger { border-color: #dc3545; color: #dc3545; }
+    .modal-actions button.danger:hover { background: #dc3545; color: white; }
+    .modal-actions button.primary { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    .modal-actions button.primary:hover { background: #c99830; }
+
+    /* ═════ PRINT ═════ */
+    .print-header { display: none; }
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
+      .print-area {
+        display: block !important;
+        position: absolute; left: 0; top: 0;
+        width: 100%;
+        font-family: 'Poppins', sans-serif;
+      }
+      .print-header {
+        display: block !important;
+        text-align: center; margin-bottom: 10px;
+        padding-bottom: 8px; border-bottom: 2px solid #102440;
+      }
+      .print-header h1 { font-family: 'Playfair Display', serif; font-size: 15pt; margin: 0 0 3px; color: #102440; }
+      .print-header .addr { font-size: 8.5pt; color: #555; }
+      .print-header .doc-title { font-size: 11pt; font-weight: 700; margin-top: 6px; color: #102440; letter-spacing: 1px; }
+      .print-meta { font-size: 8pt; color: #666; text-align: right; margin-bottom: 6px; }
+      .print-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+      .print-table th { background: #eaeaea; padding: 4px 6px; border: 1px solid #333; text-align: left; font-size: 7.5pt; text-transform: uppercase; }
+      .print-table td { padding: 4px 6px; border: 1px solid #666; }
+      .print-table .num { text-align: right; }
+      .print-table thead { display: table-header-group; }
+      .print-table tr { page-break-inside: avoid; }
+      .print-footer { margin-top: 10px; font-size: 8pt; text-align: center; color: #888; }
+      .print-totals { font-size: 9pt; font-weight: 700; text-align: right; margin-top: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-layout">
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="assets/image/icon-sj.jpg" alt="Logo" />
+        <div class="logo-text">Swarn Jyoti <span>Jewellers</span></div>
+      </div>
+      <nav>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="invoice.html" class="nav-item"><i class="fas fa-file-invoice"></i> Invoice Maker</a>
+        <a href="paid-due.html" class="nav-item"><i class="fas fa-receipt"></i> Paid &amp; Due</a>
+        <a href="stock.html" class="nav-item active"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>© 2026 Swarn Jyoti</p>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1><i class="fas fa-boxes"></i> Stock Inventory</h1>
+      </div>
+
+      <!-- SUMMARY CARDS -->
+      <div class="stock-summary">
+        <div class="stock-summary-card">
+          <p class="stock-summary-label">Total Items</p>
+          <p class="stock-summary-value" id="sum-items">0</p>
+          <p class="stock-summary-sub" id="sum-items-sub">0 in stock · 0 sold</p>
+        </div>
+        <div class="stock-summary-card gold">
+          <p class="stock-summary-label">Gold</p>
+          <p class="stock-summary-value" id="sum-gold">0.000 g</p>
+          <p class="stock-summary-sub" id="sum-gold-sub">0 items</p>
+        </div>
+        <div class="stock-summary-card silver">
+          <p class="stock-summary-label">Silver</p>
+          <p class="stock-summary-value" id="sum-silver">0.000 g</p>
+          <p class="stock-summary-sub" id="sum-silver-sub">0 items</p>
+        </div>
+        <div class="stock-summary-card value">
+          <p class="stock-summary-label">Total Value</p>
+          <p class="stock-summary-value" id="sum-value">₹0</p>
+          <p class="stock-summary-sub" id="sum-value-sub">Avg ₹0/g</p>
+        </div>
+      </div>
+
+      <!-- ADD FORM -->
+      <div class="add-stock-form" id="add-form">
+        <div class="field">
+          <label>Item Name *</label>
+          <input type="text" id="stk-name" placeholder="e.g. Gold Ring" />
+        </div>
+        <div class="field">
+          <label>Metal</label>
+          <select id="stk-metal" onchange="onAddMetalChange()">
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Carat / Purity</label>
+          <select id="stk-carat">
+            <option value="24K">24K</option>
+            <option value="22K" selected>22K</option>
+            <option value="18K">18K</option>
+            <option value="14K">14K</option>
+            <option value="9K">9K</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <input type="text" id="stk-cat" list="cat-suggestions" placeholder="e.g. Ring" />
+          <datalist id="cat-suggestions">
+            <option value="Ring"><option value="Chain"><option value="Necklace">
+            <option value="Bangle"><option value="Bracelet"><option value="Earring">
+            <option value="Pendant"><option value="Nose Pin"><option value="Anklet">
+            <option value="Coin"><option value="Bar"><option value="Ornament">
+          </datalist>
+        </div>
+        <div class="field">
+          <label>Weight (g) *</label>
+          <input type="number" id="stk-weight" placeholder="0.000" step="0.001" min="0" oninput="updateRatePreview()" />
+        </div>
+        <div class="field">
+          <label>Price (₹) *</label>
+          <input type="number" id="stk-price" placeholder="0" step="1" min="0" oninput="updateRatePreview()" />
+          <div class="rate-preview" id="rate-preview"></div>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="stk-status">
+            <option value="In Stock">In Stock</option>
+            <option value="Reserved">Reserved</option>
+            <option value="Sold">Sold</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn-add" id="btn-save-stock">
+            <i class="fas fa-plus"></i> Add
+          </button>
+          <button class="btn-clear" onclick="clearAddForm()" title="Clear form">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-bar">
+        <input type="text" id="filter-search" placeholder="🔍 Search item, category, or carat…" oninput="applyFilters()" />
+        <select id="filter-metal" onchange="applyFilters()">
+          <option value="">All Metals</option>
+          <option value="Gold">Gold</option>
+          <option value="Silver">Silver</option>
+        </select>
+        <select id="filter-cat" onchange="applyFilters()">
+          <option value="">All Categories</option>
+        </select>
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="In Stock">In Stock</option>
+          <option value="Reserved">Reserved</option>
+          <option value="Sold">Sold</option>
+        </select>
+        <button class="filter-btn" onclick="resetStockFilters()" title="Reset filters">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+        <div style="display: flex; gap: 4px;">
+          <button class="filter-btn" onclick="exportCSV()" title="Download as CSV">
+            <i class="fas fa-file-csv"></i> CSV
+          </button>
+          <button class="filter-btn" onclick="printStockList()" title="Print visible list">
+            <i class="fas fa-print"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STOCK TABLE -->
+      <div class="table-wrapper">
+        <table class="stock-table" id="stock-table">
+          <thead>
+            <tr>
+              <th class="cb-cell"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" /></th>
+              <th data-sort="item">Item Name <span class="sort-ind">⇅</span></th>
+              <th data-sort="metal">Metal <span class="sort-ind">⇅</span></th>
+              <th data-sort="carat">Carat <span class="sort-ind">⇅</span></th>
+              <th data-sort="cat">Category <span class="sort-ind">⇅</span></th>
+              <th data-sort="weight" style="text-align:right;">Weight (g) <span class="sort-ind">⇅</span></th>
+              <th data-sort="rate" style="text-align:right;">Rate/g <span class="sort-ind">⇅</span></th>
+              <th data-sort="price" style="text-align:right;">Price (₹) <span class="sort-ind">⇅</span></th>
+              <th data-sort="status">Status <span class="sort-ind">⇅</span></th>
+              <th style="text-align:center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- BULK ACTIONS BAR -->
+  <div id="bulk-bar" class="bulk-bar">
+    <span><span class="bulk-count" id="bulk-count">0</span> selected</span>
+    <button onclick="bulkMarkSold()"><i class="fas fa-check"></i> Mark Sold</button>
+    <button onclick="bulkMarkInStock()"><i class="fas fa-undo"></i> Mark In Stock</button>
+    <button class="danger" onclick="bulkDelete()"><i class="fas fa-trash"></i> Delete</button>
+    <button onclick="clearSelection()"><i class="fas fa-times"></i></button>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Stock Item</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <input type="hidden" id="edit-id" />
+      <div class="form-group">
+        <label>Item Name *</label>
+        <input type="text" id="edit-name" class="form-control" required />
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Metal</label>
+          <select id="edit-metal" class="form-control">
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Carat / Purity</label>
+          <input type="text" id="edit-carat" class="form-control" placeholder="e.g. 22K or 999" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" id="edit-cat" class="form-control" list="cat-suggestions" placeholder="e.g. Ring" />
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Weight (g) *</label>
+          <input type="number" id="edit-weight" class="form-control" step="0.001" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" id="edit-price" class="form-control" step="1" min="0" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="edit-status" class="form-control">
+          <option value="In Stock">In Stock</option>
+          <option value="Reserved">Reserved</option>
+          <option value="Sold">Sold</option>
+        </select>
+      </div>
+      <button class="btn-gold" style="width:100%; margin-top:0.4rem;" onclick="saveStockEdit()">
+        <i class="fas fa-save"></i> Save Changes
+      </button>
+    </div>
+  </div>
+
+  <!-- VIEW MODAL -->
+  <div id="view-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Item Details</h3>
+        <button class="modal-close" onclick="closeViewModal()">&times;</button>
+      </div>
+      <div id="view-content"></div>
+      <div class="modal-actions" id="view-actions"></div>
+    </div>
+  </div>
+
+  <!-- PRINT AREA -->
+  <div id="print-area" class="print-area" style="display:none;">
+    <div class="print-header">
+      <h1>SWARN JYOTI JEWELLERS</h1>
+      <div class="addr">Soni Gali, Sasamusa, Gopalganj, Bihar - 841505 · Ph: 9939332968</div>
+      <div class="doc-title">STOCK INVENTORY</div>
+    </div>
+    <div class="print-meta">Printed: <span id="print-date"></span></div>
+    <table class="print-table" id="print-table">
+      <thead>
+        <tr>
+          <th style="width:4%;">#</th>
+          <th style="width:22%;">Item</th>
+          <th style="width:8%;">Metal</th>
+          <th style="width:8%;">Carat</th>
+          <th style="width:14%;">Category</th>
+          <th style="width:10%;" class="num">Weight</th>
+          <th style="width:11%;" class="num">Rate/g</th>
+          <th style="width:13%;" class="num">Price</th>
+          <th style="width:10%;">Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="print-totals" id="print-totals"></div>
+    <div class="print-footer">Computer generated inventory list</div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    /* ═══════════════════════════════════════════════════════
+       CONSTANTS + STATE
+       ═══════════════════════════════════════════════════════ */
+    const GOLD_CARATS = ['24K', '22K', '18K', '14K', '9K'];
+    const SILVER_CARATS = ['999', '925', '800', 'Other'];
+
+    let selectedIds = new Set();
+    let sortColumn = null;
+    let sortDirection = 'asc';
+
+    /* ═══════════════════════════════════════════════════════
+       HELPERS
+       ═══════════════════════════════════════════════════════ */
+    function escapeHtml(s) {
+      if (s === undefined || s === null) return '';
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+    function toNum(v, d = 0) { const n = parseFloat(v); return isFinite(n) ? n : d; }
+    function fmt(n) { return '₹' + Math.round(toNum(n)).toLocaleString('en-IN'); }
+    function newId() {
+      return `STK-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    }
+    function rateOf(item) {
+      const w = toNum(item.weight);
+      return w > 0 ? toNum(item.price) / w : 0;
+    }
+    function statusBadgeClass(status) {
+      if (status === 'Sold') return 'badge-status-sold';
+      if (status === 'Reserved') return 'badge-status-reserved';
+      return 'badge-status-instock';
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ENSURE IDs (backwards compat)
+       ═══════════════════════════════════════════════════════ */
+    function ensureIds() {
+      const data = DB.getData();
+      let changed = false;
+      (data.stock || []).forEach(item => {
+        if (!item.id) { item.id = newId(); changed = true; }
+        if (item.status === undefined) { item.status = 'In Stock'; changed = true; }
+      });
+      if (changed) DB.saveData(data);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CARAT OPTIONS PER METAL
+       ═══════════════════════════════════════════════════════ */
+    function onAddMetalChange() {
+      const metal = document.getElementById('stk-metal').value;
+      const caratSel = document.getElementById('stk-carat');
+      const opts = metal === 'Gold' ? GOLD_CARATS : SILVER_CARATS;
+      caratSel.innerHTML = opts.map((c, i) => `<option value="${c}"${i === (metal === 'Gold' ? 1 : 0) ? ' selected' : ''}>${c}</option>`).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RATE PREVIEW (Add form)
+       ═══════════════════════════════════════════════════════ */
+    function updateRatePreview() {
+      const w = toNum(document.getElementById('stk-weight').value);
+      const p = toNum(document.getElementById('stk-price').value);
+      const el = document.getElementById('rate-preview');
+      if (w > 0 && p > 0) {
+        el.innerText = `≈ ${fmt(p / w)}/g`;
+      } else {
+        el.innerText = '';
+      }
+    }
+
+    function clearAddForm() {
+      ['stk-name','stk-cat','stk-weight','stk-price'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('stk-metal').value = 'Gold';
+      onAddMetalChange();
+      document.getElementById('stk-status').value = 'In Stock';
+      updateRatePreview();
+      document.getElementById('stk-name').focus();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SUMMARY CARDS
+       ═══════════════════════════════════════════════════════ */
+    function renderSummary() {
+      const data = DB.getData();
+      const items = data.stock || [];
+
+      let goldWt = 0, goldCount = 0, silverWt = 0, silverCount = 0;
+      let totalValue = 0, totalWeight = 0;
+      let inStock = 0, sold = 0;
+
+      items.forEach(it => {
+        const w = toNum(it.weight);
+        const p = toNum(it.price);
+        totalValue += p;
+        totalWeight += w;
+        const metal = it.metal || 'Gold';
+        if (metal === 'Gold') { goldWt += w; goldCount++; }
+        else if (metal === 'Silver') { silverWt += w; silverCount++; }
+        const st = it.status || 'In Stock';
+        if (st === 'Sold') sold++; else inStock++;
+      });
+
+      document.getElementById('sum-items').innerText = items.length;
+      document.getElementById('sum-items-sub').innerText = `${inStock} in stock · ${sold} sold`;
+      document.getElementById('sum-gold').innerText = goldWt.toFixed(3) + ' g';
+      document.getElementById('sum-gold-sub').innerText = goldCount + ' item' + (goldCount === 1 ? '' : 's');
+      document.getElementById('sum-silver').innerText = silverWt.toFixed(3) + ' g';
+      document.getElementById('sum-silver-sub').innerText = silverCount + ' item' + (silverCount === 1 ? '' : 's');
+      document.getElementById('sum-value').innerText = fmt(totalValue);
+      const avgRate = totalWeight > 0 ? totalValue / totalWeight : 0;
+      document.getElementById('sum-value-sub').innerText = 'Avg ' + fmt(avgRate) + '/g';
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TABLE
+       ═══════════════════════════════════════════════════════ */
+    function getSortValue(item, col) {
+      switch (col) {
+        case 'item':   return String(item.item || '').toLowerCase();
+        case 'metal':  return String(item.metal || 'Gold').toLowerCase();
+        case 'carat':  return String(item.carat || '-').toLowerCase();
+        case 'cat':    return String(item.cat || 'General').toLowerCase();
+        case 'weight': return toNum(item.weight);
+        case 'rate':   return rateOf(item);
+        case 'price':  return toNum(item.price);
+        case 'status': return String(item.status || 'In Stock').toLowerCase();
+        default:       return 0;
+      }
+    }
+
+    function renderStock() {
+      const data = DB.getData();
+      const items = data.stock || [];
+      const tbody = document.getElementById('stock-body');
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="10">
+            <div class="empty-state">
+              <i class="fas fa-box-open"></i>
+              <p>Inventory is empty</p>
+              <small>Add your first item using the form above.</small>
+            </div>
+          </td></tr>`;
+        renderCategoryFilter([]);
+        updateBulkBar();
+        document.getElementById('select-all').checked = false;
+        return;
+      }
+
+      // Category filter
+      const categories = Array.from(new Set(items.map(i => i.cat || 'General'))).sort();
+      renderCategoryFilter(categories);
+
+      // Sort
+      let display = items.slice();
+      if (sortColumn) {
+        display.sort((a, b) => {
+          const va = getSortValue(a, sortColumn);
+          const vb = getSortValue(b, sortColumn);
+          if (va < vb) return sortDirection === 'asc' ? -1 : 1;
+          if (va > vb) return sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+      } else {
+        display.reverse(); // newest first
+      }
+
+      display.forEach(item => {
+        const metal = item.metal || 'Gold';
+        const carat = item.carat && item.carat !== '-' ? item.carat : '—';
+        const cat = item.cat || 'General';
+        const wt = toNum(item.weight);
+        const price = toNum(item.price);
+        const rate = wt > 0 ? price / wt : 0;
+        const status = item.status || 'In Stock';
+        const metalClass = metal === 'Gold' ? 'badge-gold' : 'badge-silver';
+        const statusClass = statusBadgeClass(status);
+        const isChecked = selectedIds.has(item.id);
+
+        tbody.innerHTML += `
+          <tr data-id="${escapeHtml(item.id)}" data-metal="${escapeHtml(metal)}" data-cat="${escapeHtml(cat)}" data-status="${escapeHtml(status)}" class="${isChecked ? 'selected' : ''}">
+            <td class="cb-cell"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSelect('${escapeHtml(item.id)}')" /></td>
+            <td style="font-weight:600;">${escapeHtml(item.item)}</td>
+            <td><span class="badge ${metalClass}">${escapeHtml(metal)}</span></td>
+            <td>${escapeHtml(carat)}</td>
+            <td>${escapeHtml(cat)}</td>
+            <td class="num">${wt.toFixed(3)} g</td>
+            <td class="num">${rate > 0 ? fmt(rate) : '—'}</td>
+            <td class="num" style="font-weight:700;">${fmt(price)}</td>
+            <td><span class="badge ${statusClass}">${escapeHtml(status)}</span></td>
+            <td class="actions-cell">
+              <button class="btn-action btn-view" onclick="viewStock('${escapeHtml(item.id)}')" title="View"><i class="fas fa-eye"></i></button>
+              <button class="btn-action btn-edit-stock" onclick="editStock('${escapeHtml(item.id)}')" title="Edit"><i class="fas fa-edit"></i></button>
+              <button class="btn-action btn-toggle-sold" onclick="toggleSold('${escapeHtml(item.id)}')" title="${status === 'Sold' ? 'Mark In Stock' : 'Mark Sold'}">
+                <i class="fas fa-${status === 'Sold' ? 'undo' : 'check'}"></i>
+              </button>
+              <button class="btn-action btn-dup" onclick="duplicateStock('${escapeHtml(item.id)}')" title="Duplicate"><i class="fas fa-copy"></i></button>
+              <button class="btn-action btn-delete-stock" onclick="deleteStock('${escapeHtml(item.id)}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+
+      // Update sort indicators
+      document.querySelectorAll('#stock-table th[data-sort]').forEach(th => {
+        th.classList.toggle('sort-active', th.dataset.sort === sortColumn);
+        const ind = th.querySelector('.sort-ind');
+        if (ind) ind.textContent = th.dataset.sort === sortColumn ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅';
+      });
+
+      updateBulkBar();
+      applyFilters();
+    }
+
+    function renderCategoryFilter(categories) {
+      const sel = document.getElementById('filter-cat');
+      const current = sel.value;
+      sel.innerHTML = '<option value="">All Categories</option>';
+      categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      if (current && categories.includes(current)) sel.value = current;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FILTERS
+       ═══════════════════════════════════════════════════════ */
+    window.applyFilters = function () {
+      const q = (document.getElementById('filter-search').value || '').trim().toLowerCase();
+      const metal = document.getElementById('filter-metal').value;
+      const cat = document.getElementById('filter-cat').value;
+      const status = document.getElementById('filter-status').value;
+
+      document.querySelectorAll('#stock-body tr[data-id]').forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const rowMetal = row.dataset.metal;
+        const rowCat = row.dataset.cat;
+        const rowStatus = row.dataset.status;
+
+        let show = true;
+        if (q && !text.includes(q)) show = false;
+        if (metal && rowMetal !== metal) show = false;
+        if (cat && rowCat !== cat) show = false;
+        if (status && rowStatus !== status) show = false;
+
+        row.style.display = show ? '' : 'none';
+      });
+
+      syncSelectAllCheckbox();
+    };
+
+    window.resetStockFilters = function () {
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-metal').value = '';
+      document.getElementById('filter-cat').value = '';
+      document.getElementById('filter-status').value = '';
+      applyFilters();
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       SORTING
+       ═══════════════════════════════════════════════════════ */
+    function sortBy(col) {
+      if (sortColumn === col) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = col;
+        sortDirection = 'asc';
+      }
+      renderStock();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SELECTION
+       ═══════════════════════════════════════════════════════ */
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      const row = document.querySelector(`#stock-body tr[data-id="${id}"]`);
+      if (row) row.classList.toggle('selected', selectedIds.has(id));
+      updateBulkBar();
+      syncSelectAllCheckbox();
+    }
+
+    function toggleSelectAll() {
+      const allCb = document.getElementById('select-all');
+      const visibleRows = Array.from(document.querySelectorAll('#stock-body tr[data-id]')).filter(r => r.style.display !== 'none');
+      if (allCb.checked) {
+        visibleRows.forEach(r => selectedIds.add(r.dataset.id));
+      } else {
+        visibleRows.forEach(r => selectedIds.delete(r.dataset.id));
+      }
+      renderStock();
+    }
+
+    function syncSelectAllCheckbox() {
+      const allCb = document.getElementById('select-all');
+      const visibleRows = Array.from(document.querySelectorAll('#stock-body tr[data-id]')).filter(r => r.style.display !== 'none');
+      if (visibleRows.length === 0) { allCb.checked = false; allCb.indeterminate = false; return; }
+      const selectedVisible = visibleRows.filter(r => selectedIds.has(r.dataset.id)).length;
+      allCb.checked = selectedVisible === visibleRows.length;
+      allCb.indeterminate = selectedVisible > 0 && selectedVisible < visibleRows.length;
+    }
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulk-bar');
+      document.getElementById('bulk-count').innerText = selectedIds.size;
+      bar.classList.toggle('visible', selectedIds.size > 0);
+    }
+
+    function clearSelection() {
+      selectedIds.clear();
+      renderStock();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BULK ACTIONS
+       ═══════════════════════════════════════════════════════ */
+    function bulkMarkSold() {
+      if (selectedIds.size === 0) return;
+      const data = DB.getData();
+      data.stock.forEach(it => { if (selectedIds.has(it.id)) it.status = 'Sold'; });
+      DB.saveData(data);
+      selectedIds.clear();
+      renderSummary();
+      renderStock();
+      showAlert('Marked as Sold.', 'success');
+    }
+
+    function bulkMarkInStock() {
+      if (selectedIds.size === 0) return;
+      const data = DB.getData();
+      data.stock.forEach(it => { if (selectedIds.has(it.id)) it.status = 'In Stock'; });
+      DB.saveData(data);
+      selectedIds.clear();
+      renderSummary();
+      renderStock();
+      showAlert('Marked as In Stock.', 'success');
+    }
+
+    function bulkDelete() {
+      if (selectedIds.size === 0) return;
+      const n = selectedIds.size;
+      const doDelete = () => {
+        const data = DB.getData();
+        data.stock = data.stock.filter(it => !selectedIds.has(it.id));
+        DB.saveData(data);
+        selectedIds.clear();
+        renderSummary();
+        renderStock();
+        showAlert(`Deleted ${n} item${n === 1 ? '' : 's'}.`, 'success');
+      };
+      if (typeof showConfirm === 'function') {
+        showConfirm('Delete ' + n + ' items?', 'This cannot be undone.', 'Yes, Delete', 'Cancel', doDelete);
+      } else if (confirm('Delete ' + n + ' items?')) {
+        doDelete();
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADD
+       ═══════════════════════════════════════════════════════ */
+    function addStock() {
+      const name = document.getElementById('stk-name').value.trim();
+      const metal = document.getElementById('stk-metal').value;
+      const carat = document.getElementById('stk-carat').value;
+      const cat = document.getElementById('stk-cat').value.trim();
+      const weight = parseFloat(document.getElementById('stk-weight').value);
+      const price = parseFloat(document.getElementById('stk-price').value);
+      const status = document.getElementById('stk-status').value;
+
+      if (!name) { showAlert('Please enter the item name.', 'error'); return; }
+      if (isNaN(weight) || weight <= 0) { showAlert('Weight must be greater than zero.', 'error'); return; }
+      if (isNaN(price) || price <= 0) { showAlert('Price must be greater than zero.', 'error'); return; }
+
+      try {
+        DB.addStock({
+          item: name,
+          metal: metal,
+          carat: carat || '-',
+          cat: cat || 'General',
+          weight: String(weight),
+          price: String(price),
+          status: status
+        });
+      } catch (err) {
+        showAlert('Failed to add item: ' + (err.message || err), 'error');
+        return;
+      }
+
+      clearAddForm();
+      renderSummary();
+      renderStock();
+      showAlert('Item added successfully.', 'success');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       EDIT
+       ═══════════════════════════════════════════════════════ */
+    window.editStock = function (id) {
+      const data = DB.getData();
+      const item = (data.stock || []).find(i => i.id === id);
+      if (!item) { showAlert('Item not found.', 'error'); return; }
+
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-name').value = item.item || '';
+      document.getElementById('edit-metal').value = item.metal || 'Gold';
+      document.getElementById('edit-carat').value = (item.carat && item.carat !== '-') ? item.carat : '';
+      document.getElementById('edit-cat').value = (item.cat && item.cat !== 'General') ? item.cat : '';
+      document.getElementById('edit-weight').value = item.weight || '';
+      document.getElementById('edit-price').value = item.price || '';
+      document.getElementById('edit-status').value = item.status || 'In Stock';
+
+      document.getElementById('edit-modal').classList.add('active');
+    };
+
+    window.closeEditModal = function () {
+      document.getElementById('edit-modal').classList.remove('active');
+    };
+
+    window.saveStockEdit = function () {
+      const id = document.getElementById('edit-id').value;
+      const name = document.getElementById('edit-name').value.trim();
+      const metal = document.getElementById('edit-metal').value;
+      const carat = document.getElementById('edit-carat').value.trim();
+      const cat = document.getElementById('edit-cat').value.trim();
+      const weight = parseFloat(document.getElementById('edit-weight').value);
+      const price = parseFloat(document.getElementById('edit-price').value);
+      const status = document.getElementById('edit-status').value;
+
+      if (!id) { showAlert('Missing record ID.', 'error'); return; }
+      if (!name) { showAlert('Item name is required.', 'error'); return; }
+      if (isNaN(weight) || weight <= 0) { showAlert('Weight must be greater than zero.', 'error'); return; }
+      if (isNaN(price) || price <= 0) { showAlert('Price must be greater than zero.', 'error'); return; }
+
+      try {
+        const data = DB.getData();
+        const item = (data.stock || []).find(i => i.id === id);
+        if (!item) { showAlert('Item not found.', 'error'); return; }
+
+        item.item = name;
+        item.metal = metal;
+        item.carat = carat || '-';
+        item.cat = cat || 'General';
+        item.weight = String(weight);
+        item.price = String(price);
+        item.status = status;
+
+        DB.saveData(data);
+      } catch (err) {
+        showAlert('Update failed: ' + (err.message || err), 'error');
+        return;
+      }
+
+      closeEditModal();
+      renderSummary();
+      renderStock();
+      showAlert('Item updated successfully.', 'success');
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       VIEW
+       ═══════════════════════════════════════════════════════ */
+    let viewItemId = null;
+
+    window.viewStock = function (id) {
+      const data = DB.getData();
+      const item = (data.stock || []).find(i => i.id === id);
+      if (!item) return;
+      viewItemId = id;
+
+      const metal = item.metal || 'Gold';
+      const carat = item.carat && item.carat !== '-' ? item.carat : '—';
+      const cat = item.cat || 'General';
+      const wt = toNum(item.weight);
+      const price = toNum(item.price);
+      const rate = wt > 0 ? price / wt : 0;
+      const status = item.status || 'In Stock';
+      const metalClass = metal === 'Gold' ? 'badge-gold' : 'badge-silver';
+      const statusClass = statusBadgeClass(status);
+
+      document.getElementById('view-content').innerHTML = `
+        <div class="detail-header">
+          <div class="detail-header-icon"><i class="fas fa-gem"></i></div>
+          <div>
+            <h3 class="detail-header-name">${escapeHtml(item.item)}</h3>
+            <div class="detail-header-sub"><span class="badge ${metalClass}">${escapeHtml(metal)}</span> · ${escapeHtml(carat)}</div>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-item-label">Category</div>
+            <div class="detail-item-value">${escapeHtml(cat)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-item-label">Status</div>
+            <div class="detail-item-value"><span class="badge ${statusClass}">${escapeHtml(status)}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-item-label">Weight</div>
+            <div class="detail-item-value">${wt.toFixed(3)} g</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-item-label">Rate/g</div>
+            <div class="detail-item-value">${rate > 0 ? fmt(rate) : '—'}</div>
+          </div>
+          <div class="detail-item" style="grid-column: span 2;">
+            <div class="detail-item-label">Price</div>
+            <div class="detail-item-value" style="font-size:1.2rem; color:var(--gold);">${fmt(price)}</div>
+          </div>
+        </div>`;
+
+      document.getElementById('view-actions').innerHTML = `
+        <button class="primary" onclick="closeViewModal(); editStock('${escapeHtml(id)}')"><i class="fas fa-edit"></i> Edit</button>
+        <button onclick="closeViewModal(); toggleSold('${escapeHtml(id)}')"><i class="fas fa-${status === 'Sold' ? 'undo' : 'check'}"></i> ${status === 'Sold' ? 'Mark In Stock' : 'Mark Sold'}</button>
+        <button onclick="closeViewModal(); duplicateStock('${escapeHtml(id)}')"><i class="fas fa-copy"></i> Duplicate</button>
+        <button class="danger" onclick="closeViewModal(); deleteStock('${escapeHtml(id)}')"><i class="fas fa-trash"></i> Delete</button>`;
+
+      document.getElementById('view-modal').classList.add('active');
+    };
+
+    window.closeViewModal = function () {
+      document.getElementById('view-modal').classList.remove('active');
+      viewItemId = null;
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       TOGGLE SOLD
+       ═══════════════════════════════════════════════════════ */
+    window.toggleSold = function (id) {
+      const data = DB.getData();
+      const item = (data.stock || []).find(i => i.id === id);
+      if (!item) return;
+      item.status = item.status === 'Sold' ? 'In Stock' : 'Sold';
+      DB.saveData(data);
+      renderSummary();
+      renderStock();
+      showAlert(`Marked as ${item.status}.`, 'success');
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       DUPLICATE
+       ═══════════════════════════════════════════════════════ */
+    window.duplicateStock = function (id) {
+      const data = DB.getData();
+      const item = (data.stock || []).find(i => i.id === id);
+      if (!item) return;
+      try {
+        DB.addStock({
+          item: item.item + ' (Copy)',
+          metal: item.metal || 'Gold',
+          carat: item.carat || '-',
+          cat: item.cat || 'General',
+          weight: item.weight,
+          price: item.price,
+          status: 'In Stock'
+        });
+      } catch (err) {
+        showAlert('Duplicate failed: ' + (err.message || err), 'error');
+        return;
+      }
+      renderSummary();
+      renderStock();
+      showAlert('Item duplicated.', 'success');
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       DELETE
+       ═══════════════════════════════════════════════════════ */
+    window.deleteStock = function (id) {
+      const data = DB.getData();
+      const item = (data.stock || []).find(i => i.id === id);
+      if (!item) return;
+
+      const doDelete = () => {
+        try {
+          const fresh = DB.getData();
+          fresh.stock = (fresh.stock || []).filter(i => i.id !== id);
+          DB.saveData(fresh);
+        } catch (err) {
+          showAlert('Delete failed: ' + (err.message || err), 'error');
+          return;
+        }
+        selectedIds.delete(id);
+        renderSummary();
+        renderStock();
+        showAlert('Item deleted.', 'success');
+      };
+
+      if (typeof showConfirm === 'function') {
+        showConfirm('Delete Item?', `Permanently delete "${item.item}"? This cannot be undone.`, 'Yes, Delete', 'Cancel', doDelete);
+      } else if (confirm(`Delete "${item.item}"?`)) {
+        doDelete();
+      }
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       EXPORT CSV
+       ═══════════════════════════════════════════════════════ */
+    window.exportCSV = function () {
+      const data = DB.getData();
+      const items = data.stock || [];
+      if (items.length === 0) { showAlert('No items to export.', 'info'); return; }
+
+      const rows = [['ID', 'Name', 'Metal', 'Carat', 'Category', 'Weight (g)', 'Rate/g', 'Price', 'Status']];
+      items.forEach(it => {
+        const w = toNum(it.weight);
+        const p = toNum(it.price);
+        const rate = w > 0 ? (p / w).toFixed(2) : '0';
+        rows.push([
+          it.id || '', it.item || '', it.metal || 'Gold', it.carat || '-',
+          it.cat || 'General', w.toFixed(3), rate, p.toFixed(2), it.status || 'In Stock'
+        ]);
+      });
+
+      const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SwarnJyoti_Stock_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showAlert('Stock exported to CSV.', 'success');
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       PRINT
+       ═══════════════════════════════════════════════════════ */
+    window.printStockList = function () {
+      // Print what's currently visible (respects filters + sort)
+      const visibleRows = Array.from(document.querySelectorAll('#stock-body tr[data-id]')).filter(r => r.style.display !== 'none');
+
+      if (visibleRows.length === 0) { showAlert('Nothing to print (no items match filters).', 'info'); return; }
+
+      const data = DB.getData();
+      const itemsById = {};
+      (data.stock || []).forEach(it => itemsById[it.id] = it);
+
+      const tbody = document.querySelector('#print-table tbody');
+      tbody.innerHTML = '';
+      let totalValue = 0, totalWeight = 0;
+
+      visibleRows.forEach((row, i) => {
+        const item = itemsById[row.dataset.id];
+        if (!item) return;
+        const w = toNum(item.weight);
+        const p = toNum(item.price);
+        totalValue += p;
+        totalWeight += w;
+        const rate = w > 0 ? p / w : 0;
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${escapeHtml(item.item)}</td>
+            <td>${escapeHtml(item.metal || 'Gold')}</td>
+            <td>${escapeHtml(item.carat || '-')}</td>
+            <td>${escapeHtml(item.cat || 'General')}</td>
+            <td class="num">${w.toFixed(3)} g</td>
+            <td class="num">${rate > 0 ? fmt(rate) : '—'}</td>
+            <td class="num">${fmt(p)}</td>
+            <td>${escapeHtml(item.status || 'In Stock')}</td>
+          </tr>`;
+      });
+
+      document.getElementById('print-totals').innerHTML =
+        `Total: ${visibleRows.length} items · ${totalWeight.toFixed(3)} g · ${fmt(totalValue)}`;
+      document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+      document.getElementById('print-area').style.display = 'block';
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => { document.getElementById('print-area').style.display = 'none'; }, 500);
+      }, 100);
+    };
+
+    window.addEventListener('afterprint', () => {
+      document.getElementById('print-area').style.display = 'none';
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       INIT
+       ═══════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+      ensureIds();
+      onAddMetalChange();
+
+      document.getElementById('btn-save-stock').addEventListener('click', addStock);
+
+      // Enter key submits the add form
+      document.querySelectorAll('.add-stock-form input').forEach(inp => {
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); addStock(); }
+        });
+      });
+
+      // Column sort
+      document.querySelectorAll('#stock-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => sortBy(th.dataset.sort));
+      });
+
+      // Click outside bulk bar's checkboxes: clicking a row (not on a button) selects it
+      // (skip — buttons have their own click handlers)
+
+      renderSummary();
+      renderStock();
+
+      window.addEventListener('pageshow', () => {
+        renderSummary();
+        renderStock();
+      });
+    });
+  </script>
+</body>
+</html>

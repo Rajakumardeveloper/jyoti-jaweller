@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Maker · Swarn Jyoti Jewellers</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+
+    <style>
+        .search-section { display: flex; flex-direction: column; gap: 1.5rem; background: white; border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem; border: 1px solid #eaedf2; width: 100%; }
+        .search-header { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; flex-wrap: wrap; gap: 20px; }
+        .search-header-left { flex: 1; min-width: 250px; }
+        .search-header-left h3 { font-size: 1.2rem; font-weight: 700; color: var(--navy); margin: 0 0 4px 0; }
+        .search-header-left p { font-size: 0.85rem; color: #6b7b94; margin: 0; font-weight: 500; }
+        .search-bar-wrapper { position: relative; display: flex; align-items: center; width: 350px; max-width: 100%; flex-shrink: 0; }
+        .search-icon { position: absolute; left: 16px; width: 18px; height: 18px; fill: #8a9bb0; pointer-events: none; }
+        .search-bar-wrapper input { width: 100%; padding: 12px 20px 12px 45px; border: 2px solid #dce2ea; border-radius: 50px; font-family: var(--font-body); font-size: 13px; background: var(--soft-grey); color: var(--navy); transition: all 0.2s ease; }
+        .search-bar-wrapper input:focus { outline: none; border-color: var(--gold); background: white; box-shadow: 0 0 0 4px rgba(213, 166, 60, 0.1); }
+
+        .table-responsive { width: 100%; max-height: 250px; overflow-y: auto; overflow-x: auto; border: 1px solid #eaedf2; border-radius: 8px; }
+        .invoice-list-table { width: 100%; min-width: 700px; border-collapse: collapse; font-size: 0.85rem; }
+        .invoice-list-table th { position: sticky; top: 0; z-index: 10; background: var(--soft-grey); color: var(--navy); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: left; padding: 12px 15px; border-bottom: 1px solid #dce2ea; }
+        .invoice-list-table td { padding: 12px 15px; border-bottom: 1px solid #f0f2f5; color: var(--navy); font-weight: 500; transition: 0.15s; white-space: nowrap; }
+        .invoice-list-table tr:hover td { background-color: var(--warm-white); }
+
+        .btn-small-edit { padding: 6px 12px; background: white; color: var(--navy); border: 1px solid var(--navy); border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-small-edit:hover { background: var(--navy); color: white; }
+        .btn-small-delete { padding: 6px 12px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; margin-left: 5px; }
+        .btn-small-delete:hover { background: #dc3545; color: white; }
+
+        .billing-toggle-wrapper { background: var(--soft-grey); padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; border: 1px solid #dce2ea; }
+        .billing-toggle-wrapper label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--navy); cursor: pointer; }
+        .billing-toggle-wrapper input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
+
+        .invoice-container { max-width: 1400px; width: 100%; background: white; box-shadow: var(--shadow-md); margin: 0 auto; border-radius: var(--radius); overflow: hidden; margin-bottom: 30px; border: 1px solid #dce2ea; scroll-margin-top: 20px; }
+        .invoice { padding: 30px 40px; background: white; font-family: var(--font-body); }
+        .vendor-header { border-bottom: 2px solid var(--navy); padding-bottom: 15px; margin-bottom: 20px; }
+        .company-header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .company-icon { width: 50px; height: 50px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 2px; }
+        .company-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .vendor-name { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+        .vendor-details { font-size: 11px; line-height: 1.5; color: #5d6f88; font-weight: 500; }
+        .contact-row { margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--navy); }
+        .row-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; flex-wrap: wrap; gap: 10px; }
+        .estimate-h2 { font-size: 22px; font-weight: 900; color: var(--warm-white); background: var(--navy); padding: 8px 20px; border-radius: 6px; letter-spacing: 1px; margin: 0; }
+
+        .invoice-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+        .meta-box { border: 1px solid #dce2ea; padding: 15px; background: var(--warm-white); border-radius: 8px; }
+        .meta-title { font-weight: 700; font-size: 12px; background: var(--soft-grey); color: var(--navy); padding: 6px 10px; margin: -15px -15px 15px -15px; border-bottom: 1px solid #dce2ea; border-radius: 8px 8px 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta-row { display: flex; margin-bottom: 10px; font-size: 12px; align-items: center; gap: 10px; }
+        .meta-label { width: 110px; font-weight: 600; font-size: 11px; color: #5d6f88; }
+        .meta-value { flex: 1; }
+        .meta-value input, .meta-value textarea { width: 100%; padding: 6px 8px; border: 1px solid #cbd2de; border-radius: 4px; font-size: 12px; background: white; transition: 0.2s; }
+        .meta-value input:focus, .meta-value textarea:focus { border-color: var(--gold); outline: none; }
+
+        .print-text { display: none; font-size: 12px; font-weight: 600; color: var(--navy); }
+        .screen-only { display: inline; }
+
+        .payment-group { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        .payment-group label { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--navy); }
+        .payment-group input { accent-color: var(--gold); width: 14px; height: 14px; }
+
+        .items-wrapper { border: 1px solid #dce2ea; border-radius: 8px; margin: 20px 0; overflow-x: auto; width: 100%; }
+        .items-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+        .items-table th, .items-table td { border-bottom: 1px solid #eaedf2; border-right: 1px solid #eaedf2; padding: 8px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; overflow: visible; }
+        .items-table th:last-child, .items-table td:last-child { border-right: none; }
+        .items-table th { background: var(--soft-grey); color: var(--navy); font-weight: 700; font-size: 10px; text-transform: uppercase; }
+        .items-table input { width: 100%; padding: 5px; border: 1px solid transparent; border-radius: 4px; font-size: 11px; text-align: center; background: var(--warm-white); transition: 0.2s; box-sizing: border-box; }
+        .items-table input:focus { border-color: var(--gold); background: white; outline: none; }
+        .items-table .rate-hint { font-size: 8px; color: #8a9bb0; margin-top: 2px; line-height: 1.2; }
+
+        .items-table th:nth-child(1)  { width: 3.5%; }
+        .items-table th:nth-child(2)  { width: 19%; }
+        .items-table th:nth-child(3)  { width: 13%; }
+        .items-table th:nth-child(4)  { width: 7%;   }
+        .items-table th:nth-child(5)  { width: 7%;   }
+        .items-table th:nth-child(6)  { width: 7%;   }
+        .items-table th:nth-child(7)  { width: 8%;   }
+        .items-table th:nth-child(8)  { width: 7.5%; }
+        .items-table th:nth-child(9)  { width: 7%;   }
+        .items-table th:nth-child(10) { width: 6%;   }
+        .items-table th:nth-child(11) { width: 10%;  }
+        .items-table th:nth-child(12) { width: 5%;   }
+
+        /* ═══════════════════════════════════════════════════════
+           PURITY DROPDOWN
+           ═══════════════════════════════════════════════════════ */
+        .purity-combo { width: 100%; }
+        .purity-trigger {
+            width: 100%; padding: 5px 18px 5px 6px;
+            border: 1px solid transparent; border-radius: 4px;
+            font-size: 11px; font-family: var(--font-body);
+            text-align: left; background: var(--warm-white); color: var(--navy);
+            cursor: pointer; position: relative;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+        .purity-trigger:hover { border-color: #dce2ea; background: white; }
+        .purity-trigger:focus { outline: none; border-color: var(--gold); background: white; }
+        .purity-trigger::after {
+            content: '▾'; position: absolute; right: 5px; top: 50%;
+            transform: translateY(-50%); font-size: 8px; color: #8a9bb0;
+        }
+
+        #purityPanel.purity-panel { display: none; }
+        .purity-panel {
+            position: fixed; z-index: 10000;
+            background: white; border: 1px solid #dce2ea;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(16,36,64,0.18);
+            overflow: hidden;
+            box-sizing: border-box;
+            outline: none;
+        }
+        #purityPanel.purity-panel.open { display: block; }
+
+        .purity-list {
+            max-height: 320px;
+            overflow-y: auto; overflow-x: hidden;
+            padding: 4px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #c0c8d4 #f1f3f7;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        .purity-list::-webkit-scrollbar { width: 10px; }
+        .purity-list::-webkit-scrollbar-track { background: #f1f3f7; }
+        .purity-list::-webkit-scrollbar-thumb {
+            background: #c0c8d4; border-radius: 5px;
+            border: 2px solid #f1f3f7;
+        }
+        .purity-list::-webkit-scrollbar-thumb:hover { background: #a0aab8; }
+
+        .purity-group-header {
+            position: sticky; top: 0; z-index: 1;
+            padding: 6px 10px; font-size: 9px; font-weight: 700;
+            color: #6b7b94; text-transform: uppercase; letter-spacing: 0.05em;
+            background: var(--soft-grey);
+            border-top: 1px solid #eaedf2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            pointer-events: none;
+        }
+        .purity-group-header:first-child { border-top: none; }
+
+        .purity-option {
+            padding: 8px 10px 8px 22px; font-size: 12px;
+            color: var(--navy); cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .purity-option:hover { background: var(--warm-white); }
+        .purity-option.selected { background: #FFF9EE; font-weight: 700; color: var(--navy); }
+        .purity-option.selected::before {
+            content: '✓'; position: absolute; left: 6px; color: var(--gold);
+            font-weight: 900; font-size: 11px;
+        }
+        .purity-option.focused {
+            background: #FFF2DD;
+            box-shadow: inset 3px 0 0 var(--gold);
+        }
+
+        .delete-row-btn { background: transparent; color: #dc3545; border: none; padding: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .delete-row-btn:hover { transform: scale(1.2); }
+        .add-item-btn { background: var(--warm-white); color: var(--navy); border: 2px dashed #cbd2de; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; width: 100%; margin-bottom: 20px; transition: 0.2s; }
+        .add-item-btn:hover { border-color: var(--gold); background: var(--pastel-champagne); }
+
+        .totals-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; margin: 20px 0; }
+        .tax-card, .amount-card { border: 1px solid #dce2ea; padding: 15px; background: white; border-radius: 8px; }
+        .tax-card h5, .amount-card h5 { background: var(--navy); color: white; margin: -15px -15px 15px -15px; padding: 8px 15px; border-radius: 8px 8px 0 0; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .tax-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--navy); }
+        .grand-total-row { border-top: 2px solid var(--navy); margin-top: 12px; padding-top: 12px; font-weight: 800; font-size: 16px; color: var(--navy); }
+        .words-box { background: var(--pastel-champagne); padding: 12px; margin-top: 10px; font-size: 12px; font-weight: 700; border-left: 4px solid var(--gold); color: var(--navy); border-radius: 0 4px 4px 0; }
+
+        .signature-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 30px 0 15px; padding-top: 15px; }
+        .sign-box { border-top: 1px solid var(--navy); padding: 15px; text-align: center; font-size: 12px; font-weight: 600; color: var(--navy); }
+
+        .action-bar { display: flex; gap: 15px; justify-content: flex-end; padding: 20px; background: var(--soft-grey); border-top: 1px solid #dce2ea; border-radius: 0 0 var(--radius) var(--radius); }
+        .btn { padding: 12px 24px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-gold { background: var(--navy); color: white; }
+        .btn-gold:hover { background: #1c3052; }
+        .btn-green { background: var(--gold); color: var(--navy); }
+        .btn-green:hover { background: #c99830; }
+        .btn-cancel { background: #e0e0e0; color: #333; }
+        .btn-cancel:hover { background: #ccc; }
+        .no-print { display: flex; }
+
+        .edit-hint { font-size: 0.72rem; color: #6b7b94; margin: 4px 0 0; padding: 6px 10px; background: #FFF9EE; border-left: 2px solid var(--gold); border-radius: 0 4px 4px 0; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PRINT LAYOUT
+           ═══════════════════════════════════════════════════════════════ */
+        @media print {
+            @page { size: A4 portrait; margin: 8mm; }
+            html, body { width: 100% !important; height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
+            #app-layout, .main-content { display: block !important; position: static !important; width: 100% !important; height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; }
+            .sidebar, .page-header, .search-section, .billing-toggle-wrapper, .action-bar, .add-item-btn, .delete-row-btn, .payment-group, .no-print, .screen-only, .rate-hint, .purity-trigger, .purity-combo, .purity-panel, #purityPanel, input, select, textarea, button, .edit-hint { display: none !important; }
+            body * { visibility: hidden; }
+            .invoice-container, .invoice-container * { visibility: visible; }
+            .invoice-container { position: static !important; display: block !important; width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; background: #fff !important; }
+            .invoice { display: block !important; width: 100% !important; height: auto !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; background: #fff !important; }
+            .print-text { display: inline !important; visibility: visible !important; font-size: 8.5pt !important; font-weight: 600 !important; color: #000 !important; white-space: normal !important; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-word !important; }
+            .vendor-header { border-bottom: 2px solid #000 !important; padding-bottom: 8px !important; margin-bottom: 10px !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+            .company-header { margin-bottom: 6px !important; }
+            .company-icon { width: 40px !important; height: 40px !important; background: transparent !important; }
+            .vendor-name { font-size: 15pt !important; color: #000 !important; line-height: 1.2 !important; }
+            .vendor-details { font-size: 8.5pt !important; color: #000 !important; line-height: 1.3 !important; }
+            .contact-row { font-size: 9.5pt !important; margin-top: 4px !important; color: #000 !important; }
+            .estimate-h2 { background: transparent !important; color: #000 !important; border: 2px solid #000 !important; font-size: 13pt !important; padding: 3px 10px !important; }
+            .invoice-meta { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-bottom: 10px !important; width: 100% !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+            .meta-box { border: 1px solid #000 !important; padding: 6px !important; background: transparent !important; border-radius: 0 !important; overflow: visible !important; }
+            .meta-title { background: #f0f0f0 !important; color: #000 !important; border-bottom: 1px solid #000 !important; font-size: 8.5pt !important; padding: 3px 6px !important; margin: -6px -6px 6px -6px !important; border-radius: 0 !important; page-break-after: avoid !important; }
+            .meta-row { margin-bottom: 3px !important; font-size: 8pt !important; page-break-inside: avoid !important; align-items: flex-start !important; }
+            .meta-label { font-size: 7.5pt !important; color: #000 !important; width: 80px !important; flex-shrink: 0 !important; }
+            .meta-value { min-width: 0 !important; flex: 1 !important; overflow: visible !important; word-break: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; }
+            .items-wrapper { border: 1px solid #000 !important; margin: 8px 0 !important; border-radius: 0 !important; overflow: visible !important; width: 100% !important; page-break-inside: auto !important; }
+            .items-table { width: 100% !important; max-width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; margin: 0 !important; }
+            .items-table th, .items-table td { border: 1px solid #000 !important; padding: 3px 2px !important; font-size: 7pt !important; color: #000 !important; text-align: center !important; vertical-align: middle !important; white-space: normal !important; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-word !important; hyphens: auto !important; box-sizing: border-box !important; overflow: visible !important; }
+            .items-table th { background: #eaeaea !important; font-size: 6.5pt !important; font-weight: 700 !important; }
+            .items-table th:last-child, .items-table td:last-child { display: none !important; }
+            .items-table th:nth-child(1) { width: 4%;  }
+            .items-table th:nth-child(2) { width: 23.5%; }
+            .items-table th:nth-child(3) { width: 11%; }
+            .items-table th:nth-child(4) { width: 6.5%; }
+            .items-table th:nth-child(5) { width: 6.5%; }
+            .items-table th:nth-child(6) { width: 6.5%; }
+            .items-table th:nth-child(7) { width: 8%;  }
+            .items-table th:nth-child(8) { width: 8%;  }
+            .items-table th:nth-child(9) { width: 7%;  }
+            .items-table th:nth-child(10){ width: 6%;  }
+            .items-table th:nth-child(11){ width: 13%; }
+            .items-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .items-table thead { display: table-header-group !important; }
+            .items-table tbody { display: table-row-group !important; }
+            .totals-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin: 8px 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; width: 100% !important; }
+            .tax-card, .amount-card { padding: 6px !important; border: 1px solid #000 !important; border-radius: 0 !important; overflow: visible !important; }
+            .tax-card h5, .amount-card h5 { background: #eaeaea !important; color: #000 !important; border-bottom: 1px solid #000 !important; font-size: 8.5pt !important; padding: 3px 8px !important; margin: -6px -6px 6px -6px !important; border-radius: 0 !important; }
+            .tax-row { margin-bottom: 3px !important; font-size: 8pt !important; color: #000 !important; }
+            .grand-total-row { margin-top: 6px !important; padding-top: 6px !important; border-top: 2px solid #000 !important; font-size: 9.5pt !important; }
+            .words-box { background: #f9f9f9 !important; border-left: 2px solid #000 !important; color: #000 !important; font-size: 8pt !important; padding: 5px !important; word-break: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; }
+            .signature-footer { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin: 20px 0 10px !important; padding-top: 10px !important; page-break-inside: avoid !important; break-inside: avoid !important; width: 100% !important; }
+            .sign-box { border-top: 1px solid #000 !important; color: #000 !important; font-size: 8pt !important; padding: 8px !important; }
+            .empty-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-layout">
+    <aside class="sidebar">
+      <div class="logo"><img src="assets/image/icon-sj.jpg" alt="Logo" /><div class="logo-text">Swarn Jyoti <span>Jewellers</span></div></div>
+      <nav>
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="invoice.html" class="nav-item active"><i class="fas fa-file-invoice"></i> Invoice Maker</a>
+        <a href="paid-due.html" class="nav-item"><i class="fas fa-receipt"></i> Paid &amp; Due</a>
+        <a href="stock.html" class="nav-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+      </nav>
+      <div class="sidebar-footer"><p>© 2026 Swarn Jyoti</p><button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header"><h1>Invoice Maker</h1></div>
+
+        <div class="search-section no-print">
+            <div class="search-header">
+                <div class="search-header-left">
+                    <h3>Search Invoices</h3>
+                    <p>Search by name or mobile, then click edit to load.</p>
+                </div>
+                <div class="search-bar-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <input type="text" id="invoiceSearch" placeholder="Search customer or mobile..." onkeyup="filterInvoicesList()">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="invoice-list-table">
+                    <thead><tr><th>Invoice #</th><th>Customer</th><th>Mobile</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+                    <tbody id="all-invoices-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="billing-toggle-wrapper no-print">
+            <label><input type="radio" name="invoiceType" value="gst" checked onchange="toggleInvoiceType()"> GST Invoice</label>
+            <label><input type="radio" name="invoiceType" value="rough" onchange="toggleInvoiceType()"> Rough Invoice (Non-GST)</label>
+        </div>
+
+        <div class="invoice-container" id="invoiceFormContainer">
+            <div class="invoice" id="invoiceForm"></div>
+            <div class="action-bar no-print">
+                <button type="button" class="btn btn-gold" id="printBtn">🖨️ Print / PDF</button>
+                <button type="button" class="btn btn-green" id="saveBtn">💾 Save Invoice</button>
+                <button type="button" class="btn btn-cancel" id="cancelEditBtn" style="display: none;" onclick="window.location.href='invoice.html'">✖ Start New Invoice</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="purityPanel" class="purity-panel" tabindex="-1">
+    <div class="purity-list" id="purityList"></div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/db.js"></script>
+<script>
+    const CATEGORY_DEFS = {
+        silver999: { label: 'Silver 999', qualities: [{ value: '999', label: '999' }] },
+        silverOrnaments: {
+            label: 'Silver Ornaments',
+            qualities: [
+                { value: '999', label: '999' },
+                { value: '50T', label: '50T' },
+                { value: 'tunch', label: 'Tunch + Wastage' }
+            ]
+        },
+        goldOrnaments: {
+            label: 'Gold Ornaments',
+            qualities: [
+                { value: '24K', label: '24K' },
+                { value: '22K', label: '22K' },
+                { value: '20K', label: '20K' },
+                { value: '18K', label: '18K' },
+                { value: '14K', label: '14K' },
+                { value: '9K',  label: '9K'  }
+            ]
+        },
+        gems: { label: 'Gems Stone', qualities: [{ value: 'ordinary', label: 'Ordinary' }] }
+    };
+    const TUNCH_OPTIONS = ['50', '60', '70', '80', '92.5'];
+
+    let appData = { invoices: [], customers: [], goldRates: {}, rateConfig: {} };
+    let itemsData = [];
+    let isGstInvoice = true;
+    let currentEditingId = null;
+    let lastLedgerEdit = 'paid';
+    let activePurityTrigger = null;
+    let purityFocusedIndex = -1;
+
+    function deriveRateConfigFromMetalPrices(mp) {
+        mp = mp || {};
+        const asNum = (v) => Number(v) || 0;
+        const k22 = asNum(mp['22K']) || 5800;
+        const k18 = asNum(mp['18K']) || 4800;
+        return {
+            updatedAt: new Date().toISOString(),
+            silver999: { rate: asNum(mp['Silver 999']) || 75 },
+            silverOrnaments: {
+                '999': { rate: asNum(mp['Silver 999']) || 75 },
+                '50T': { rate: 0 },
+                tunch: {
+                    '50':   { rate: 0, wastage: 0 },
+                    '60':   { rate: 0, wastage: 0 },
+                    '70':   { rate: 0, wastage: 0 },
+                    '80':   { rate: asNum(mp['Silver Ornaments']) || 80, wastage: 0 },
+                    '92.5': { rate: 0, wastage: 0 }
+                }
+            },
+            goldOrnaments: {
+                '24K': asNum(mp['24K']) || 6200,
+                '22K': k22,
+                '20K': asNum(mp['20K']) || Math.round((k22 + k18) / 2),
+                '18K': k18,
+                '14K': asNum(mp['14K']) || 3700,
+                '9K':  asNum(mp['9K'])  || 2400
+            },
+            gems: { ordinary: { rate: 0, basis: 'carat' } }
+        };
+    }
+
+    (function initRates() {
+        let dbData = {};
+        try { dbData = DB.getData(); } catch (e) { dbData = {}; }
+        const settings = dbData.settings || {};
+        appData.goldRates = settings.metalPrices || {
+            '24K': 6200, '22K': 5800, '18K': 4800, '14K': 3700, '9K': 2400,
+            'Silver 999': 75, 'Silver Ornaments': 80, 'Gold Ornaments': 5800
+        };
+        appData.rateConfig = settings.rateConfig && settings.rateConfig.goldOrnaments
+            ? settings.rateConfig
+            : deriveRateConfigFromMetalPrices(appData.goldRates);
+    })();
+
+    function toNum(v, d = 0) { const n = parseFloat(v); return isNaN(n) ? d : n; }
+
+    function generateInvoiceId() {
+        const data = DB.getData();
+        let id, attempts = 0;
+        do {
+            id = `SJ-${Date.now().toString().slice(-5)}${Math.floor(Math.random() * 90 + 10)}`;
+            attempts++;
+        } while (data.invoices.some(i => i.id === id) && attempts < 20);
+        return id;
+    }
+
+    function numToWords(n) {
+        if (n === 0) return "Zero Rupees Only";
+        const u = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const t = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        function u100(num) { return num < 20 ? u[num] : t[Math.floor(num / 10)] + (num % 10 ? ' ' + u[num % 10] : ''); }
+        function convert(num) {
+            if (!num) return ''; let r = '';
+            if (num >= 10000000) { r += convert(Math.floor(num / 10000000)) + ' Crore '; num %= 10000000; }
+            if (num >= 100000) { r += convert(Math.floor(num / 100000)) + ' Lakh '; num %= 100000; }
+            if (num >= 1000) { r += convert(Math.floor(num / 1000)) + ' Thousand '; num %= 1000; }
+            if (num >= 100) { r += u[Math.floor(num / 100)] + ' Hundred '; num %= 100; }
+            if (num) r += u100(num);
+            return r.trim();
+        }
+        return convert(n) + ' Rupees Only';
+    }
+
+    function parsePurityKey(key) {
+        const parts = (key || '').split('|');
+        return { category: parts[0] || 'goldOrnaments', quality: parts[1] || '22K', tunch: parts[2] || '' };
+    }
+    function buildPurityKey(category, quality, tunch) { return `${category}|${quality}|${tunch || ''}`; }
+    function isGoldPurityKey(key) { return parsePurityKey(key).category === 'goldOrnaments'; }
+
+    function getPurityLabel(key) {
+        const { category, quality, tunch } = parsePurityKey(key);
+        if (category === 'silver999') return 'Silver 999';
+        if (category === 'silverOrnaments') {
+            if (quality === '999')  return 'Silver Orn. 999';
+            if (quality === '50T')  return 'Silver 50T';
+            if (quality === 'tunch' && tunch) {
+                const rate = appData.rateConfig.silverOrnaments?.tunch?.[tunch];
+                const wast = rate ? Number(rate.wastage) || 0 : 0;
+                return `Silver T${tunch}${wast > 0 ? ` (${wast}% w.)` : ''}`;
+            }
+            return 'Silver Ornament';
+        }
+        if (category === 'goldOrnaments') return `Gold ${quality}`;
+        if (category === 'gems') return 'Gems Ordinary';
+        return '';
+    }
+
+    function getRateFromConfig(key) {
+        const { category, quality, tunch } = parsePurityKey(key);
+        const cfg = appData.rateConfig || {};
+        let baseRate = 0, wastagePct = 0, basis = 'gram';
+        if (category === 'silver999') baseRate = toNum(cfg.silver999?.rate);
+        else if (category === 'silverOrnaments') {
+            if (quality === '999') baseRate = toNum(cfg.silverOrnaments?.['999']?.rate);
+            else if (quality === '50T') baseRate = toNum(cfg.silverOrnaments?.['50T']?.rate);
+            else if (quality === 'tunch') {
+                const t = cfg.silverOrnaments?.tunch?.[tunch];
+                baseRate = toNum(t?.rate);
+                wastagePct = toNum(t?.wastage);
+            }
+        } else if (category === 'goldOrnaments') baseRate = toNum(cfg.goldOrnaments?.[quality]);
+        else if (category === 'gems') {
+            baseRate = toNum(cfg.gems?.ordinary?.rate);
+            basis = cfg.gems?.ordinary?.basis || 'carat';
+        }
+        return { baseRate, wastagePct, effectiveRate: baseRate * (1 + wastagePct / 100), basis };
+    }
+
+    function migrateOldPurity(item) {
+        if (item.purityKey) return item;
+        const oldPurity = item.purity || '22K (Gold)';
+        let key = 'goldOrnaments|22K|';
+        if (/24K/.test(oldPurity))                     key = 'goldOrnaments|24K|';
+        else if (/22K/.test(oldPurity))                key = 'goldOrnaments|22K|';
+        else if (/20K/.test(oldPurity))                key = 'goldOrnaments|20K|';
+        else if (/18K/.test(oldPurity))                key = 'goldOrnaments|18K|';
+        else if (/14K/.test(oldPurity))                key = 'goldOrnaments|14K|';
+        else if (/9K/.test(oldPurity))                 key = 'goldOrnaments|9K|';
+        else if (/Gold Ornaments/i.test(oldPurity))    key = 'goldOrnaments|22K|';
+        else if (/Silver 999/i.test(oldPurity))        key = 'silver999|999|';
+        else if (/Silver Ornaments/i.test(oldPurity))  key = 'silverOrnaments|999|';
+        item.purityKey = key;
+        item.purityLabel = getPurityLabel(key);
+        item.weightUnit = parsePurityKey(key).category === 'gems' ? 'carat' : 'gram';
+        item.rateBasis = item.weightUnit;
+        return item;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PURITY DROPDOWN
+       ═══════════════════════════════════════════════════════ */
+    function openPurityPanel(trigger, rowIndex) {
+        activePurityTrigger = trigger;
+        const panel = document.getElementById('purityPanel');
+        const list  = document.getElementById('purityList');
+        const row   = itemsData[rowIndex];
+        const currentKey = row.purityKey || 'goldOrnaments|22K|';
+        list.innerHTML = '';
+
+        Object.entries(CATEGORY_DEFS).forEach(([catKey, catDef]) => {
+            const header = document.createElement('div');
+            header.className = 'purity-group-header';
+            header.textContent = catDef.label;
+            list.appendChild(header);
+            catDef.qualities.forEach(q => {
+                if (q.value === 'tunch') {
+                    TUNCH_OPTIONS.forEach(t => addOption(list, buildPurityKey(catKey, 'tunch', t), 'Tunch ' + t, currentKey, rowIndex));
+                } else {
+                    addOption(list, buildPurityKey(catKey, q.value, ''), q.label, currentKey, rowIndex);
+                }
+            });
+        });
+
+        panel.classList.add('open');
+        panel.style.display = 'block';
+        positionPurityPanel(trigger);
+
+        const opts = list.querySelectorAll('.purity-option');
+        const sel = list.querySelector('.purity-option.selected');
+        purityFocusedIndex = sel ? Array.from(opts).indexOf(sel) : 0;
+        if (purityFocusedIndex < 0) purityFocusedIndex = 0;
+        highlightFocusedOption();
+        if (opts[purityFocusedIndex]) opts[purityFocusedIndex].scrollIntoView({ block: 'center' });
+    }
+
+    function addOption(list, key, label, currentKey, rowIndex) {
+        const opt = document.createElement('div');
+        opt.className = 'purity-option';
+        opt.dataset.key = key;
+        opt.dataset.rowIndex = String(rowIndex);
+        opt.textContent = label;
+        opt.title = label;
+        if (key === currentKey) opt.classList.add('selected');
+        opt.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const idx = parseInt(opt.dataset.rowIndex, 10);
+            if (isNaN(idx)) return;
+            applyPurityToRow(idx, opt.dataset.key);
+            closePurityPanel();
+        });
+        list.appendChild(opt);
+    }
+
+    function highlightFocusedOption() {
+        const list = document.getElementById('purityList');
+        const opts = list.querySelectorAll('.purity-option');
+        opts.forEach((o, i) => o.classList.toggle('focused', i === purityFocusedIndex));
+        if (opts[purityFocusedIndex]) opts[purityFocusedIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function positionPurityPanel(trigger) {
+        const panel = document.getElementById('purityPanel');
+        const list = document.getElementById('purityList');
+        const rect = trigger.getBoundingClientRect();
+
+        let width = Math.min(rect.width, window.innerWidth - 20);
+        if (width < 120) width = 120;
+        panel.style.width = width + 'px';
+
+        list.style.maxHeight = 'none';
+        void list.offsetHeight;
+        const naturalHeight = list.offsetHeight;
+        const listMaxHeight = Math.max(80, Math.min(naturalHeight, 320, window.innerHeight - 24 - 12));
+        list.style.maxHeight = listMaxHeight + 'px';
+
+        void panel.offsetHeight;
+        const ah = panel.offsetHeight, aw = panel.offsetWidth;
+        const spaceBelow = window.innerHeight - rect.bottom - 10;
+        const spaceAbove = rect.top - 10;
+        const openAbove = spaceBelow < ah && spaceAbove > spaceBelow;
+
+        let top = openAbove ? (rect.top - ah - 4) : (rect.bottom + 4);
+        let left = rect.left;
+        if (left + aw > window.innerWidth - 10) left = window.innerWidth - aw - 10;
+        if (left < 10) left = 10;
+        if (top < 10) top = 10;
+        if (top + ah > window.innerHeight - 10) top = Math.max(10, window.innerHeight - ah - 10);
+
+        panel.style.left = left + 'px';
+        panel.style.top = top + 'px';
+    }
+
+    function closePurityPanel() {
+        const panel = document.getElementById('purityPanel');
+        panel.classList.remove('open');
+        panel.style.display = 'none';
+        activePurityTrigger = null;
+        purityFocusedIndex = -1;
+    }
+
+    function applyPurityToRow(idx, newKey) {
+        const row = itemsData[idx];
+        if (!row) return;
+        row.purityKey = newKey;
+        row.purityLabel = getPurityLabel(newKey);
+        const info = getRateFromConfig(newKey);
+        row.ratePerGram = info.effectiveRate;
+        row.rateBasis = info.basis;
+        row.rateSnapshot = info;
+        row.weightUnit = parsePurityKey(newKey).category === 'gems' ? 'carat' : 'gram';
+
+        const trs = document.querySelectorAll('#modalItemsBody tr');
+        const tr = trs[idx];
+        if (!tr) return;
+
+        const trigger = tr.cells[2].querySelector('.purity-trigger');
+        if (trigger) { trigger.textContent = row.purityLabel; trigger.title = row.purityLabel; }
+        const purPrint = tr.cells[2].querySelector('.print-text');
+        if (purPrint) purPrint.innerText = row.purityLabel;
+
+        const rateInput = tr.cells[6].querySelector('input');
+        if (rateInput) rateInput.value = info.effectiveRate;
+        const ratePrintEl = tr.cells[6].querySelector('.print-text');
+        if (ratePrintEl) ratePrintEl.innerText = info.effectiveRate;
+
+        updateRateHint(tr.cells[6], info);
+        updateWeightCellLabels(tr, row);
+
+        // Auto-switch making type: Gold → percentage, everything else → fixed
+        const isGold = isGoldPurityKey(newKey);
+        const desiredMakingType = isGold ? 'percentage' : 'fixed';
+        if (row.makingType !== desiredMakingType) {
+            row.makingType = desiredMakingType;
+            const mc = tr.cells[7], mtSel = mc.querySelector('select'), mtPr = mc.querySelector('.print-text');
+            if (mtSel) mtSel.value = desiredMakingType;
+            if (mtPr) mtPr.innerText = desiredMakingType === 'percentage' ? 'Gold %' : 'Fixed ₹';
+
+            const vc = tr.cells[8], vIn = vc.querySelector('input'), vPr = vc.querySelector('.print-text');
+            if (desiredMakingType === 'percentage') {
+                const pct = toNum(row.makingPercent) || 12;
+                if (vIn) { vIn.value = pct; vIn.placeholder = '%'; }
+                if (vPr) vPr.innerText = pct + '%';
+            } else {
+                const fix = toNum(row.makingFixed) || 150;
+                if (vIn) { vIn.value = fix; vIn.placeholder = '₹'; }
+                if (vPr) vPr.innerText = '₹' + fix;
+            }
+        }
+
+        recalcModalTotals();
+    }
+
+    /* ─── Global listeners for dropdown ─── */
+    document.addEventListener('mousedown', (e) => {
+        const panel = document.getElementById('purityPanel');
+        if (!panel.classList.contains('open')) return;
+        if (panel.contains(e.target)) return;
+        if (activePurityTrigger && activePurityTrigger.contains(e.target)) return;
+        closePurityPanel();
+    });
+    document.addEventListener('keydown', (e) => {
+        const panel = document.getElementById('purityPanel');
+        if (!panel.classList.contains('open')) return;
+        const opts = document.getElementById('purityList').querySelectorAll('.purity-option');
+        if (e.key === 'Escape') { e.preventDefault(); closePurityPanel(); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); purityFocusedIndex = Math.min(purityFocusedIndex + 1, opts.length - 1); highlightFocusedOption(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); purityFocusedIndex = Math.max(purityFocusedIndex - 1, 0); highlightFocusedOption(); }
+        else if (e.key === 'Home') { e.preventDefault(); purityFocusedIndex = 0; highlightFocusedOption(); }
+        else if (e.key === 'End') { e.preventDefault(); purityFocusedIndex = opts.length - 1; highlightFocusedOption(); }
+        else if (e.key === 'Enter' || e.key === ' ') {
+            if (purityFocusedIndex >= 0 && opts[purityFocusedIndex]) {
+                e.preventDefault();
+                const opt = opts[purityFocusedIndex];
+                const idx = parseInt(opt.dataset.rowIndex, 10);
+                if (!isNaN(idx)) { applyPurityToRow(idx, opt.dataset.key); closePurityPanel(); }
+            }
+        }
+    });
+    window.addEventListener('scroll', (e) => {
+        const panel = document.getElementById('purityPanel');
+        if (!panel.classList.contains('open')) return;
+        const t = e.target;
+        if (t && t.nodeType === 1 && (t === panel || panel.contains(t))) return;
+        closePurityPanel();
+    }, true);
+    window.addEventListener('resize', () => {
+        if (document.getElementById('purityPanel').classList.contains('open') && activePurityTrigger) {
+            positionPurityPanel(activePurityTrigger);
+        }
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       INVOICE BODY
+       ═══════════════════════════════════════════════════════ */
+    window.toggleInvoiceType = function () {
+        isGstInvoice = document.querySelector('input[name="invoiceType"]:checked').value === 'gst';
+        const vn = document.querySelector('.vendor-name');
+        const vd = document.getElementById('vendor-gst-details');
+        const h  = document.querySelector('.estimate-h2');
+        const gts = document.getElementById('gst-tax-section');
+        if (isGstInvoice) {
+            if (vn) vn.innerText = "SWARN JYOTI JEWELLERS - GST Tax Invoice";
+            if (h)  h.innerText = "TAX INVOICE";
+            if (vd) vd.innerHTML = `<strong>Sold By:</strong> SWARN JYOTI JEWELLERS<br><strong>Address:</strong> Soni Gali, Sasamusa, Gopalganj, Bihar - 841505<br><strong>GSTIN:</strong> 10CQAPS4738P1ZH | <strong>PAN:</strong> 10CQAPS4738P`;
+            if (gts) gts.style.display = 'flex';
+        } else {
+            if (vn) vn.innerText = "SWARN JYOTI JEWELLERS - Rough Invoice";
+            if (h)  h.innerText = "ROUGH INVOICE";
+            if (vd) vd.innerHTML = `<strong>Sold By:</strong> SWARN JYOTI JEWELLERS<br><strong>Address:</strong> Soni Gali, Sasamusa, Gopalganj, Bihar - 841505`;
+            if (gts) gts.style.display = 'none';
+        }
+        recalcModalTotals();
+    };
+
+    function buildInvoiceHTML() {
+        const container = document.getElementById('invoiceForm');
+        const today = new Date().toLocaleDateString('en-GB');
+        container.innerHTML = `
+            <div class="vendor-header">
+                <div class="company-header">
+                    <div class="company-icon"><img src="assets/image/icon-sj.jpg" alt="Logo"></div>
+                    <div class="vendor-name">SWARN JYOTI JEWELLERS - GST Tax Invoice</div>
+                </div>
+                <div class="vendor-details" id="vendor-gst-details">
+                    <strong>Sold By:</strong> SWARN JYOTI JEWELLERS<br>
+                    <strong>Address:</strong> Soni Gali, Sasamusa, Gopalganj, Bihar - 841505<br>
+                    <strong>GSTIN:</strong> 10CQAPS4738P1ZH | <strong>PAN:</strong> 10CQAPS4738P
+                </div>
+                <div class="contact-row"><strong>Contact:</strong> 9939332968</div>
+                <div class="row-flex">
+                    <span style="font-size:12px; font-weight:600;">DATE: <span id="modalInvoiceDate">${today}</span></span>
+                    <h2 class="estimate-h2">TAX INVOICE</h2>
+                </div>
+            </div>
+            <div class="invoice-meta">
+                <div class="meta-box"><div class="meta-title">Billing Address</div>
+                    <div class="meta-row" id="rowCustName"><div class="meta-label">Customer Name *</div><div class="meta-value"><input type="text" id="modalCustName" placeholder="Full Name"><span class="print-text" id="printCustName"></span></div></div>
+                    <div class="meta-row" id="rowAddress"><div class="meta-label">Address</div><div class="meta-value">
+                        <textarea id="modalCustAddress" class="address-textarea" rows="2" placeholder="Street, City, District"></textarea>
+                        <span class="print-text print-address" id="printAddressSpan"></span>
+                    </div></div>
+                    <div class="meta-row" id="rowPhone"><div class="meta-label">Phone Number</div><div class="meta-value"><input type="tel" id="modalCustPhone" maxlength="10" placeholder="10 digit mobile" onchange="onPhoneChange()"><span class="print-text" id="printCustPhone"></span></div></div>
+                    <div class="meta-row" id="rowPan"><div class="meta-label">PAN Number</div><div class="meta-value"><input type="text" id="modalCustPan" placeholder="ABCDE1234F"><span class="print-text" id="printCustPan"></span></div></div>
+                    <div class="meta-row" id="rowAadhar"><div class="meta-label">Aadhar Number</div><div class="meta-value"><input type="text" id="modalCustAadhar" placeholder="12 digit number" maxlength="12"><span class="print-text" id="printCustAadhar"></span></div></div>
+                </div>
+                <div class="meta-box"><div class="meta-title">Shipping Details</div>
+                    <div class="meta-row"><div class="meta-label">Date</div><div class="meta-value"><input type="text" id="modalBillDate" value="${today}" readonly style="background:#f0f0f0; font-weight:600;"><span class="print-text" id="printBillDate"></span></div></div>
+                    <div class="meta-row" id="rowPayment"><div class="meta-label">Payment Mode</div><div class="meta-value">
+                        <div class="payment-group" id="modalPaymentGroup">
+                            <label><input type="checkbox" value="Cash"> Cash</label><label><input type="checkbox" value="UPI"> UPI</label><label><input type="checkbox" value="Card"> Card</label>
+                            <label><input type="checkbox" value="Bank Transfer"> Bank Transfer</label>
+                        </div>
+                        <div class="print-text print-payment-display" id="printPaymentDisplay"></div>
+                    </div></div>
+                    <div class="meta-row no-print"><div class="meta-label">Paid Amount (₹)</div><div class="meta-value"><input type="number" id="modalPaidAmount" value="0" step="1" oninput="syncLedgerAmounts('paid')"></div></div>
+                    <div class="meta-row no-print"><div class="meta-label">Due Amount (₹)</div><div class="meta-value"><input type="number" id="modalDueAmount" value="0" step="1" oninput="syncLedgerAmounts('due')"></div></div>
+                    <div class="meta-row" id="rowPlace"><div class="meta-label">Place of Supply</div><div class="meta-value"><input type="text" id="modalPlaceSupply" placeholder="Enter State"><span class="print-text" id="printPlaceSupply"></span></div></div>
+                    <div class="meta-row" id="rowDiscount"><div class="meta-label">Discount (₹)</div><div class="meta-value"><input type="number" id="modalDiscount" value="0" step="1" oninput="recalcModalTotals()"><span class="print-text" id="printDiscount"></span></div></div>
+                </div>
+            </div>
+            <div class="items-wrapper"><table class="items-table"><thead><tr>
+                <th>SL</th><th>Item Description</th><th>Purity / Type</th><th>Gross Wt</th><th>Stone Wt</th><th>Net Wt</th><th>Rate (₹)</th><th>Making Type</th><th>Making %/₹</th><th>HM (₹)</th><th style="background:var(--pastel-champagne);">Total (₹)</th><th>Action</th>
+            </tr></thead><tbody id="modalItemsBody"></tbody></table></div>
+            <button type="button" class="add-item-btn no-print" onclick="addModalItem()">+ Add Item</button>
+
+            <div class="totals-grid">
+                <div class="amount-card">
+                    <h5>Amount in Words</h5>
+                    <div class="words-box" id="modalAmountWords">Zero Rupees Only</div>
+                </div>
+                <div class="tax-card">
+                    <h5>Bill Summary</h5>
+                    <div class="tax-row"><span>Total Net Value :</span><span id="modalTotalNetVal">₹0.00</span></div>
+                    <div class="tax-row"><span>Total Making Charges :</span><span id="modalTotalMaking">₹0.00</span></div>
+                    <div class="tax-row"><span>Total Hallmark (₹) :</span><span id="modalTotalHM">₹0.00</span></div>
+                    <div class="tax-row"><span>Sub Total :</span><span id="modalSubTotal">₹0.00</span></div>
+                    <div class="tax-row" id="printRowDiscount"><span>Discount :</span><span id="modalDiscountShow">₹0.00</span></div>
+                    <div class="tax-row" id="gst-tax-section" style="display:flex; align-items:center; gap:10px;"><span>GST Rate :</span><input type="number" id="modalGstRate" value="3" step="0.1" style="width:60px; padding:4px;" oninput="recalcModalTotals()"><span class="screen-only">%</span><span class="print-text" id="printGstRate">3%</span></div>
+                    <div class="tax-row" id="gst-amount-row"><span>Total GST Amount :</span><span id="modalGstAmount">₹0.00</span></div>
+                    <div class="tax-row grand-total-row"><span>GRAND TOTAL :</span><span id="modalGrandTotal">₹0.00</span></div>
+                </div>
+            </div>
+
+            <div class="signature-footer">
+                <div class="sign-box">Customer Signature</div>
+                <div class="sign-box">For SWARN JYOTI JEWELLERS<br>Authorised Signatory</div>
+            </div>
+            <div style="font-size:9px; text-align:center; border-top:1px solid #ccc; padding-top:10px; color:#666;">This is a computer generated invoice</div>
+        `;
+        if (!itemsData.length) addModalItem();
+        else renderModalItems();
+        recalcModalTotals();
+        toggleInvoiceType();
+    }
+
+    window.addModalItem = function () {
+        const key = 'goldOrnaments|22K|';
+        const info = getRateFromConfig(key);
+        itemsData.push({
+            itemDesc: '', purityKey: key, purityLabel: getPurityLabel(key),
+            grossWt: 0, stoneWt: 0, netWt: 0, weightUnit: 'gram',
+            ratePerGram: info.effectiveRate, rateBasis: info.basis, rateSnapshot: info,
+            makingType: 'percentage', makingPercent: 12, makingFixed: 150,
+            makingValue: 0, hmAmount: 0, hmValue: 0, rowTotal: 0
+        });
+        renderModalItems(); recalcModalTotals();
+    };
+
+    window.removeModalItem = function (idx) {
+        if (document.getElementById('purityPanel').classList.contains('open')) closePurityPanel();
+        itemsData.splice(idx, 1);
+        renderModalItems(); recalcModalTotals();
+    };
+
+    function renderModalItems() {
+        const tbody = document.getElementById('modalItemsBody');
+        if (!tbody) return; tbody.innerHTML = '';
+
+        itemsData.forEach((row, i) => {
+            const tr = tbody.insertRow();
+            tr.insertCell().innerText = i + 1;
+
+            // Item description
+            const tdDesc = tr.insertCell();
+            const inpDesc = document.createElement('input');
+            inpDesc.type = 'text'; inpDesc.value = row.itemDesc || ''; inpDesc.placeholder = 'Item name';
+            const descPrint = document.createElement('span');
+            descPrint.className = 'print-text'; descPrint.innerText = row.itemDesc || '';
+            inpDesc.oninput = (e) => { row.itemDesc = e.target.value; descPrint.innerText = row.itemDesc; recalcModalTotals(); };
+            tdDesc.appendChild(inpDesc); tdDesc.appendChild(descPrint);
+
+            // Purity dropdown
+            const tdPur = tr.insertCell();
+            const combo = document.createElement('div');
+            combo.className = 'purity-combo no-print';
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'purity-trigger';
+            const ck = row.purityKey || 'goldOrnaments|22K|';
+            trigger.textContent = row.purityLabel || getPurityLabel(ck);
+            trigger.title = row.purityLabel || getPurityLabel(ck);
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const panel = document.getElementById('purityPanel');
+                if (panel.classList.contains('open')) closePurityPanel();
+                else openPurityPanel(trigger, i);
+            });
+            combo.appendChild(trigger);
+            const purPrint = document.createElement('span');
+            purPrint.className = 'print-text';
+            purPrint.innerText = row.purityLabel || getPurityLabel(ck);
+            tdPur.appendChild(combo); tdPur.appendChild(purPrint);
+
+            // Gross Wt
+            const tdGr = tr.insertCell();
+            const inpGr = document.createElement('input');
+            inpGr.type = 'number'; inpGr.step = '0.01'; inpGr.value = row.grossWt || 0;
+            const grPrint = document.createElement('span');
+            grPrint.className = 'print-text';
+            grPrint.innerText = (row.grossWt || 0).toFixed(3);
+            inpGr.oninput = (e) => { row.grossWt = parseFloat(e.target.value) || 0; grPrint.innerText = row.grossWt.toFixed(3); recalcModalTotals(); };
+            tdGr.appendChild(inpGr); tdGr.appendChild(grPrint);
+
+            // Stone Wt
+            const tdSt = tr.insertCell();
+            const inpSt = document.createElement('input');
+            inpSt.type = 'number'; inpSt.step = '0.01'; inpSt.value = row.stoneWt || 0;
+            const stPrint = document.createElement('span');
+            stPrint.className = 'print-text';
+            stPrint.innerText = (row.stoneWt || 0).toFixed(3);
+            inpSt.oninput = (e) => { row.stoneWt = parseFloat(e.target.value) || 0; stPrint.innerText = row.stoneWt.toFixed(3); recalcModalTotals(); };
+            tdSt.appendChild(inpSt); tdSt.appendChild(stPrint);
+
+            // Net Wt (computed)
+            const tdNet = tr.insertCell(); tdNet.style.fontWeight = 'bold';
+            tdNet.innerText = (row.netWt || 0).toFixed(3);
+
+            // Rate
+            const tdRate = tr.insertCell();
+            const inpRate = document.createElement('input');
+            inpRate.type = 'number'; inpRate.step = '0.01'; inpRate.value = row.ratePerGram || 0;
+            const ratePrint = document.createElement('span');
+            ratePrint.className = 'print-text'; ratePrint.innerText = row.ratePerGram || 0;
+            inpRate.oninput = (e) => {
+                row.ratePerGram = parseFloat(e.target.value) || 0;
+                ratePrint.innerText = row.ratePerGram;
+                if (row.rateSnapshot) row.rateSnapshot.overridden = true;
+                recalcModalTotals();
+            };
+            tdRate.appendChild(inpRate); tdRate.appendChild(ratePrint);
+            updateRateHint(tdRate, row.rateSnapshot || getRateFromConfig(row.purityKey));
+
+            // Making type
+            const tdMType = tr.insertCell();
+            const selType = document.createElement('select');
+            const optP = document.createElement('option'); optP.value = 'percentage'; optP.innerText = 'Gold %';
+            const optF = document.createElement('option'); optF.value = 'fixed'; optF.innerText = 'Fixed ₹';
+            selType.appendChild(optP); selType.appendChild(optF);
+            selType.value = row.makingType;
+            const typePrintSpan = document.createElement('span');
+            typePrintSpan.className = 'print-text';
+            typePrintSpan.innerText = row.makingType === 'percentage' ? 'Gold %' : 'Fixed ₹';
+            selType.onchange = (e) => {
+                row.makingType = e.target.value;
+                const mIn = tr.cells[8].querySelector('input');
+                if (mIn) {
+                    if (row.makingType === 'percentage') { mIn.value = row.makingPercent || 12; mIn.placeholder = '%'; }
+                    else { mIn.value = row.makingFixed || 150; mIn.placeholder = '₹'; }
+                }
+                typePrintSpan.innerText = row.makingType === 'percentage' ? 'Gold %' : 'Fixed ₹';
+                const vS = tr.cells[8].querySelector('.print-text');
+                if (vS) vS.innerText = row.makingType === 'percentage' ? (row.makingPercent || 12) + '%' : '₹' + (row.makingFixed || 150);
+                recalcModalTotals();
+            };
+            tdMType.appendChild(selType); tdMType.appendChild(typePrintSpan);
+
+            // Making value
+            const tdMVal = tr.insertCell();
+            const inpMake = document.createElement('input');
+            inpMake.type = 'number'; inpMake.step = '0.1';
+            const valPrintSpan = document.createElement('span');
+            valPrintSpan.className = 'print-text';
+            const updateVP = () => { valPrintSpan.innerText = row.makingType === 'percentage' ? (row.makingPercent || 12) + '%' : '₹' + (row.makingFixed || 150); };
+            if (row.makingType === 'percentage') { inpMake.value = row.makingPercent || 12; inpMake.placeholder = '%'; }
+            else { inpMake.value = row.makingFixed || 150; inpMake.placeholder = '₹'; }
+            updateVP();
+            inpMake.oninput = (e) => {
+                const v = parseFloat(e.target.value) || 0;
+                if (row.makingType === 'percentage') row.makingPercent = v; else row.makingFixed = v;
+                updateVP(); recalcModalTotals();
+            };
+            tdMVal.appendChild(inpMake); tdMVal.appendChild(valPrintSpan);
+
+            // Hallmark
+            const tdHM = tr.insertCell();
+            const inpHM = document.createElement('input');
+            inpHM.type = 'number'; inpHM.step = '1'; inpHM.value = row.hmAmount || 0; inpHM.placeholder = '₹';
+            const hmPrint = document.createElement('span');
+            hmPrint.className = 'print-text'; hmPrint.innerText = '₹' + (row.hmAmount || 0);
+            inpHM.oninput = (e) => { row.hmAmount = parseFloat(e.target.value) || 0; hmPrint.innerText = '₹' + (row.hmAmount || 0); recalcModalTotals(); };
+            tdHM.appendChild(inpHM); tdHM.appendChild(hmPrint);
+
+            // Total
+            const tdTotal = tr.insertCell(); tdTotal.className = 'total-cell';
+            const tval = row.rowTotal || 0;
+            const ft = '₹' + tval.toFixed(2);
+            tdTotal.innerHTML = `<span class="screen-only" style="font-weight:800;">${ft}</span><span class="print-text" style="font-weight:800;">${ft}</span>`;
+
+            // Delete
+            const tdDel = tr.insertCell();
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button'; delBtn.innerText = '✕'; delBtn.className = 'delete-row-btn';
+            delBtn.onclick = () => window.removeModalItem(i);
+            tdDel.appendChild(delBtn);
+        });
+        recalcModalTotals();
+    }
+
+    function updateRateHint(rateCell, info) {
+        let hint = rateCell.querySelector('.rate-hint');
+        if (!hint) { hint = document.createElement('div'); hint.className = 'rate-hint no-print'; rateCell.appendChild(hint); }
+        if (!info) { hint.innerText = ''; return; }
+        if (info.wastagePct > 0) hint.innerText = `Base ₹${info.baseRate} + ${info.wastagePct}% w.`;
+        else if (info.basis === 'carat') hint.innerText = 'per carat';
+        else hint.innerText = '';
+    }
+
+    function updateWeightCellLabels(tr, row) {
+        const grPrint = tr.cells[3].querySelector('.print-text');
+        const stPrint = tr.cells[4].querySelector('.print-text');
+        if (grPrint) grPrint.innerText = (row.grossWt || 0).toFixed(3);
+        if (stPrint) stPrint.innerText = (row.stoneWt || 0).toFixed(3);
+    }
+
+    function recalcModalTotals() {
+        let totalNetVal = 0, totalMaking = 0, totalHM = 0, subTotal = 0;
+        for (let row of itemsData) {
+            const gross = parseFloat(row.grossWt) || 0;
+            const stone = parseFloat(row.stoneWt) || 0;
+            const rate = parseFloat(row.ratePerGram) || 0;
+            const hm = parseFloat(row.hmAmount) || 0;
+            const netWt = Math.max(0, gross - stone);
+            row.netWt = netWt;
+            const netVal = netWt * rate;
+            let making = 0;
+            if (row.makingType === 'percentage') making = netVal * ((parseFloat(row.makingPercent) || 12) / 100);
+            else making = parseFloat(row.makingFixed) || 0;
+            row.makingValue = making; row.hmValue = hm; row.rowTotal = netVal + making + hm;
+            totalNetVal += netVal; totalMaking += making; totalHM += hm; subTotal += row.rowTotal;
+        }
+
+        const discount = parseFloat(document.getElementById('modalDiscount')?.value) || 0;
+        const taxableAmount = Math.max(0, subTotal - discount);
+        let gstAmount = 0;
+        if (isGstInvoice) {
+            const gstRate = parseFloat(document.getElementById('modalGstRate')?.value) || 0;
+            gstAmount = taxableAmount * (gstRate / 100);
+            document.getElementById('modalGstAmount').innerText = '₹' + gstAmount.toFixed(2);
+        } else {
+            document.getElementById('modalGstAmount').innerText = '₹0.00';
+        }
+        const grandTotal = taxableAmount + gstAmount;
+
+        document.getElementById('modalTotalNetVal').innerText = '₹' + totalNetVal.toFixed(2);
+        document.getElementById('modalTotalMaking').innerText = '₹' + totalMaking.toFixed(2);
+        document.getElementById('modalTotalHM').innerText = '₹' + totalHM.toFixed(2);
+        document.getElementById('modalSubTotal').innerText = '₹' + subTotal.toFixed(2);
+        document.getElementById('modalDiscountShow').innerText = '₹' + discount.toFixed(2);
+        document.getElementById('modalGrandTotal').innerText = '₹' + grandTotal.toFixed(2);
+        document.getElementById('modalAmountWords').innerText = numToWords(Math.floor(grandTotal));
+
+        const gstPrintEl = document.getElementById('printGstRate');
+        if (gstPrintEl) gstPrintEl.innerText = (document.getElementById('modalGstRate')?.value || '0') + '%';
+
+        if (document.getElementById('modalPaidAmount')) {
+            const cp = parseFloat(document.getElementById('modalPaidAmount').value) || 0;
+            const cd = parseFloat(document.getElementById('modalDueAmount').value) || 0;
+            if (cp > 0 || cd > 0) syncLedgerAmounts(lastLedgerEdit);
+        }
+
+        const rows = document.querySelectorAll('#modalItemsBody tr');
+        for (let i = 0; i < itemsData.length && i < rows.length; i++) {
+            const netCell = rows[i].cells[5];
+            if (netCell) netCell.innerText = (itemsData[i].netWt || 0).toFixed(3);
+            const totalCell = rows[i].cells[10];
+            if (totalCell) {
+                const val = itemsData[i].rowTotal || 0;
+                const formatted = '₹' + val.toFixed(2);
+                const ss = totalCell.querySelector('.screen-only');
+                const ps = totalCell.querySelector('.print-text');
+                if (ss) ss.textContent = formatted;
+                if (ps) ps.textContent = formatted;
+            }
+        }
+    }
+
+    window.onPhoneChange = function () {
+        const phone = document.getElementById('modalCustPhone').value.trim();
+        if (!phone || phone.length < 10) return;
+        let cust = null;
+        try {
+            cust = (typeof DB.findCustomerByMobile === 'function')
+                ? DB.findCustomerByMobile(phone)
+                : (DB.getData().customers || []).find(c => c.mobile === phone);
+        } catch (e) { cust = null; }
+        if (cust) {
+            document.getElementById('modalCustName').value = cust.name || '';
+            document.getElementById('modalCustAddress').value = cust.address || '';
+            document.getElementById('modalCustPan').value = cust.pan || '';
+            document.getElementById('modalCustAadhar').value = cust.aadhar || '';
+        }
+    };
+
+    window.syncLedgerAmounts = function (source) {
+        lastLedgerEdit = source;
+        const gt = parseFloat(document.getElementById('modalGrandTotal').innerText.replace(/[₹,]/g, '')) || 0;
+        const pIn = document.getElementById('modalPaidAmount');
+        const dIn = document.getElementById('modalDueAmount');
+        let paid = parseFloat(pIn.value) || 0;
+        let due  = parseFloat(dIn.value) || 0;
+        if (source === 'paid') { due = gt - paid; if (due < 0) due = 0; dIn.value = due.toFixed(2); }
+        else if (source === 'due') { paid = gt - due; if (paid < 0) paid = 0; pIn.value = paid.toFixed(2); }
+    };
+
+    function prepareForPrint() {
+        function togglePrintRow(id, isEmpty) {
+            const el = document.getElementById(id);
+            if (el) { if (isEmpty) el.classList.add('empty-print'); else el.classList.remove('empty-print'); }
+        }
+        document.getElementById('printBillDate').innerText = document.getElementById('modalBillDate').value;
+        document.getElementById('printCustName').innerText = document.getElementById('modalCustName').value;
+        document.getElementById('printCustPhone').innerText = document.getElementById('modalCustPhone').value;
+        document.getElementById('printCustPan').innerText = document.getElementById('modalCustPan').value;
+        document.getElementById('printCustAadhar').innerText = document.getElementById('modalCustAadhar').value;
+        document.getElementById('printAddressSpan').innerText = document.getElementById('modalCustAddress').value;
+        document.getElementById('printPlaceSupply').innerText = document.getElementById('modalPlaceSupply').value;
+        document.getElementById('printDiscount').innerText = '₹' + document.getElementById('modalDiscount').value;
+        const grv = document.getElementById('modalGstRate').value || '0';
+        document.getElementById('printGstRate').innerText = grv + '%';
+
+        const sm = [];
+        document.querySelectorAll('#modalPaymentGroup input:checked').forEach(cb => sm.push(cb.value));
+        document.getElementById('printPaymentDisplay').innerText = sm.join(', ') || 'Not Selected';
+
+        togglePrintRow('rowPan', !document.getElementById('modalCustPan').value.trim());
+        togglePrintRow('rowAadhar', !document.getElementById('modalCustAadhar').value.trim());
+        togglePrintRow('rowAddress', !document.getElementById('modalCustAddress').value.trim());
+        togglePrintRow('rowPhone', !document.getElementById('modalCustPhone').value.trim());
+        togglePrintRow('rowPlace', !document.getElementById('modalPlaceSupply').value.trim());
+        togglePrintRow('rowPayment', sm.length === 0);
+
+        const dv = parseFloat(document.getElementById('modalDiscount').value) || 0;
+        togglePrintRow('printRowDiscount', dv === 0);
+
+        const rows = document.querySelectorAll('#modalItemsBody tr');
+        itemsData.forEach((item, idx) => {
+            if (rows[idx]) {
+                const empty = (!item.itemDesc || item.itemDesc.trim() === '') && (!item.rowTotal || item.rowTotal === 0);
+                if (empty) rows[idx].classList.add('empty-print'); else rows[idx].classList.remove('empty-print');
+            }
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SAVE — initial payment recorded on CREATE only, then synced
+              non-destructively on UPDATE (never touches subsequent)
+       ═══════════════════════════════════════════════════════════ */
+    function reconcileLegacyPaymentIfNeeded(invoiceId) {
+        const data = DB.getData();
+        const inv = (data.invoices || []).find(i => i.id === invoiceId);
+        if (!inv) return;
+        if (Number(inv.totalPaid) <= 0.01) return;
+        const hasTx = (data.transactions || []).some(t =>
+            t.invoiceId === invoiceId && (t.type === 'Payment' || t.type === 'Advance'));
+        if (hasTx) return;
+        try {
+            DB.addTransaction({
+                customerId: inv.customerId || null,
+                invoiceId: invoiceId,
+                type: 'Payment',
+                amount: Number(inv.totalPaid),
+                mode: 'Cash',
+                remarks: 'Reconciled from legacy invoice data',
+                date: inv.date || new Date().toLocaleDateString('en-GB'),
+                paymentType: 'Initial'
+            });
+        } catch (e) { console.warn('Reconciliation failed:', e); }
+    }
+
+    function saveToDatabase(isSilent = false) {
+        const custName = document.getElementById('modalCustName').value.trim();
+        const custPhone = document.getElementById('modalCustPhone').value.trim();
+        if (!custName) { if (!isSilent) showAlert("Please enter Customer Name.", "error"); return false; }
+        if (custPhone && !/^\d{10}$/.test(custPhone)) {
+            if (!isSilent) showAlert("Mobile number must be 10 digits.", "error");
+            return false;
+        }
+        const validItems = itemsData.filter(item => (item.itemDesc || '').trim() !== '' || item.rowTotal > 0);
+        if (validItems.length === 0) { if (!isSilent) showAlert("Please add at least one valid item.", "error"); return false; }
+
+        const paymentModes = Array.from(document.querySelectorAll('#modalPaymentGroup input:checked')).map(cb => cb.value);
+        const gt = parseFloat(document.getElementById('modalGrandTotal').innerText.replace(/[₹,]/g, '')) || 0;
+        const paidAmt = parseFloat(document.getElementById('modalPaidAmount').value) || 0;
+        const billDate = document.getElementById('modalBillDate').value;
+
+        const isUpdate = currentEditingId !== null;
+        const invoiceId = isUpdate ? currentEditingId : generateInvoiceId();
+        const itemsSnapshot = JSON.parse(JSON.stringify(itemsData));
+
+        const invoiceObj = {
+            id: invoiceId, customer: custName, date: billDate, total: gt,
+            type: isGstInvoice ? "GST Invoice" : "Rough Invoice",
+            discount: parseFloat(document.getElementById('modalDiscount').value) || 0,
+            placeOfSupply: document.getElementById('modalPlaceSupply').value,
+            gstRate: parseFloat(document.getElementById('modalGstRate').value) || 0,
+            paymentModes: paymentModes, items: itemsSnapshot,
+            rateConfigSnapshot: {
+                updatedAt: appData.rateConfig?.updatedAt || null,
+                snapshotAt: new Date().toISOString()
+            },
+            customerInfo: {
+                phone: custPhone,
+                address: document.getElementById('modalCustAddress').value,
+                pan: document.getElementById('modalCustPan').value,
+                aadhar: document.getElementById('modalCustAadhar').value
+            }
+        };
+
+        try {
+            if (isUpdate) {
+                DB.updateInvoice(currentEditingId, invoiceObj);
+                reconcileLegacyPaymentIfNeeded(currentEditingId);
+
+                // Sync initial payment so its amount matches "Paid Amount" field.
+                // Subsequent payments are preserved untouched by setInvoicePayment.
+                try {
+                    const allTxs = DB.getInvoicePayments(currentEditingId) || [];
+                    const initialTx = allTxs.find(t =>
+                        t.paymentType === 'Initial' ||
+                        (t.remarks && String(t.remarks).startsWith('Initial payment')));
+                    const subsequentSum = allTxs
+                        .filter(t => t !== initialTx)
+                        .reduce((s, t) => s + Number(t.amount || 0), 0);
+
+                    const newInitialAmount = Math.max(0, paidAmt - subsequentSum);
+
+                    if (typeof DB.setInvoicePayment === 'function') {
+                        DB.setInvoicePayment(currentEditingId, newInitialAmount, paymentModes.join(' + '), billDate);
+                    }
+                } catch (payErr) {
+                    console.warn('Initial payment sync failed:', payErr);
+                }
+            } else {
+                DB.addInvoice(invoiceObj);
+                if (paidAmt > 0) {
+                    const fresh = DB.getData().invoices.find(i => i.id === invoiceId);
+                    if (fresh) {
+                        try {
+                            DB.addTransaction({
+                                customerId: fresh.customerId || null,
+                                invoiceId: invoiceId,
+                                type: 'Payment',
+                                amount: paidAmt,
+                                mode: paymentModes.join(' + ') || 'Cash',
+                                remarks: `Initial payment on invoice #${invoiceId}`,
+                                date: billDate,
+                                paymentType: 'Initial'
+                            });
+                        } catch (payErr) {
+                            try { DB.deleteInvoice(invoiceId); } catch (e) {}
+                            throw payErr;
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Save error:', err);
+            if (!isSilent) showAlert("Save failed: " + (err.message || err), "error");
+            return false;
+        }
+
+        if (!isUpdate) {
+            currentEditingId = invoiceId;
+            document.querySelector('.page-header h1').innerHTML = `✏️ Edit Invoice #${invoiceId}`;
+            document.getElementById('saveBtn').innerHTML = `💾 Update Invoice`;
+            document.getElementById('cancelEditBtn').style.display = 'flex';
+            if (!isSilent) showAlert("Invoice saved! Payment recorded. Further payments from Paid & Due.", "success");
+        } else {
+            if (!isSilent) showAlert("Invoice updated successfully!", "success");
+        }
+        return true;
+    }
+
+    function loadAllInvoicesList() {
+        const data = DB.getData();
+        const tbody = document.getElementById('all-invoices-body');
+        const invoices = data.invoices || [];
+        tbody.innerHTML = '';
+        if (invoices.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:#6b7b94;">No invoices found.</td></tr>`;
+            return;
+        }
+        invoices.slice().reverse().forEach(inv => {
+            const phone = (inv.customerInfo && inv.customerInfo.phone) || '-';
+            const sb = inv.status ? `<span style="font-size:0.7rem;padding:2px 6px;border-radius:10px;margin-left:6px;background:${inv.status === 'PAID' ? '#E4F5E9' : inv.status === 'PARTIAL' ? '#FFF2DD' : '#FCE8E9'};color:${inv.status === 'PAID' ? '#1b6b3f' : inv.status === 'PARTIAL' ? '#7a5a00' : '#a12a3b'};">${inv.status}</span>` : '';
+            tbody.innerHTML += `
+                <tr>
+                    <td>#${inv.id}${sb}</td>
+                    <td>${inv.customer}</td>
+                    <td>${phone}</td>
+                    <td>${inv.date}</td>
+                    <td style="font-weight:600;">₹${Number(inv.total).toLocaleString('en-IN')}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <button class="btn-small-edit" onclick="window.location.href='invoice.html?edit=${inv.id}'">
+                            <svg style="width:12px;height:12px;fill:currentColor" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> Edit
+                        </button>
+                        <button class="btn-small-delete" onclick="deleteInvoice('${inv.id}')">
+                            <svg style="width:12px;height:12px;fill:currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Delete
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    window.filterInvoicesList = function () {
+        const q = document.getElementById('invoiceSearch').value.toLowerCase().trim();
+        document.querySelectorAll('#all-invoices-body tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
+        });
+    };
+
+    window.deleteInvoice = function (id) {
+        const doDelete = () => {
+            try { DB.deleteInvoice(id); } catch (e) { showAlert("Delete failed.", "error"); return; }
+            loadAllInvoicesList();
+            if (currentEditingId === id) window.location.href = 'invoice.html';
+            else showAlert("Invoice deleted successfully.", "success");
+        };
+        if (typeof showConfirm === 'function') showConfirm("Delete Invoice?", `Delete Invoice #${id}? This action cannot be undone.`, "Yes, Delete", "Cancel", doDelete);
+        else if (confirm(`Delete Invoice #${id}?`)) doDelete();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        buildInvoiceHTML();
+        loadAllInvoicesList();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+
+        if (editId) {
+            let inv = null;
+            try {
+                inv = (typeof DB.getInvoice === 'function')
+                    ? DB.getInvoice(editId)
+                    : DB.getData().invoices.find(x => x.id === editId);
+            } catch (e) { inv = null; }
+
+            if (inv) {
+                currentEditingId = inv.id;
+                document.querySelector('.page-header h1').innerHTML = `✏️ Edit Invoice #${inv.id}`;
+                document.getElementById('saveBtn').innerHTML = `💾 Update Invoice`;
+                document.getElementById('cancelEditBtn').style.display = 'flex';
+
+                document.getElementById('modalCustName').value = inv.customer || '';
+                document.getElementById('modalCustPhone').value = (inv.customerInfo && inv.customerInfo.phone) || '';
+                document.getElementById('modalCustAddress').value = (inv.customerInfo && inv.customerInfo.address) || '';
+                document.getElementById('modalCustPan').value = (inv.customerInfo && inv.customerInfo.pan) || '';
+                document.getElementById('modalCustAadhar').value = (inv.customerInfo && inv.customerInfo.aadhar) || '';
+
+                const savedDate = inv.date || new Date().toLocaleDateString('en-GB');
+                document.getElementById('modalBillDate').value = savedDate;
+                document.getElementById('modalInvoiceDate').innerText = savedDate;
+                document.getElementById('modalPlaceSupply').value = inv.placeOfSupply || '';
+                document.getElementById('modalDiscount').value = inv.discount || 0;
+                document.getElementById('modalGstRate').value = inv.gstRate || 3;
+
+                if (inv.paymentModes && Array.isArray(inv.paymentModes)) {
+                    document.querySelectorAll('#modalPaymentGroup input').forEach(cb => {
+                        cb.checked = inv.paymentModes.includes(cb.value);
+                    });
+                }
+
+                // Load paid / due — these are editable, backed by transaction history
+                const paidAmt = Number(inv.totalPaid) || 0;
+                const dueAmt = Math.max(0, (Number(inv.total) || 0) - paidAmt);
+                document.getElementById('modalPaidAmount').value = paidAmt;
+                document.getElementById('modalDueAmount').value = dueAmt;
+
+                if (inv.type === "Rough Invoice") {
+                    const rr = document.querySelector('input[name="invoiceType"][value="rough"]');
+                    if (rr) { rr.checked = true; toggleInvoiceType(); }
+                }
+
+                if (inv.items && inv.items.length > 0) {
+                    if (Object.prototype.hasOwnProperty.call(inv.items[0], 'itemDesc')) {
+                        itemsData = inv.items.map(it => migrateOldPurity(JSON.parse(JSON.stringify(it))));
+                    } else {
+                        itemsData = inv.items.map(i => {
+                            const item = {
+                                itemDesc: i.desc, grossWt: i.weight || 0, stoneWt: 0, netWt: i.weight || 0,
+                                ratePerGram: (i.price / i.weight) || 0, rateBasis: 'gram', weightUnit: 'gram',
+                                makingType: 'percentage', makingPercent: 12, makingFixed: 150,
+                                makingValue: 0, hmAmount: 0, rowTotal: i.price, purity: '22K (Gold)'
+                            };
+                            return migrateOldPurity(item);
+                        });
+                    }
+                } else {
+                    itemsData = [];
+                }
+
+                renderModalItems();
+                recalcModalTotals();
+
+                setTimeout(() => {
+                    const fc = document.getElementById('invoiceFormContainer');
+                    if (fc) fc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
+        }
+
+        document.getElementById('printBtn').addEventListener('click', function () {
+            if (document.getElementById('modalCustName').value.trim() === '') {
+                showAlert("Please enter Customer Name before printing.", "error");
+                return;
+            }
+            if (saveToDatabase(true)) {
+                prepareForPrint();
+                setTimeout(() => { window.print(); }, 120);
+            }
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', function () {
+            if (saveToDatabase(false)) loadAllInvoicesList();
+        });
+
+        if (urlParams.get('print') === '1') {
+            setTimeout(() => {
+                const b = document.getElementById('printBtn');
+                if (b) b.click();
+            }, 500);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+/* ---------- FONTS ---------- */
+@font-face { font-family: 'Playfair Display'; src: url('../assets/fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf') format('truetype'); font-weight: 400 900; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../assets/fonts/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype'); font-weight: 100 900; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('../assets/fonts/Poppins-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Roboto'; src: url('../assets/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf') format('truetype'); font-weight: 100 900; font-style: italic; font-display: swap; }
+
+:root {
+  --navy: #102440; --gold: #D5A63C; --warm-white: #FFFDF9; --soft-grey: #F1F3F7;
+  --pastel-green: #E4F5E9; --pastel-rose: #FCE8E9; --pastel-lavender: #EDEBFA; --pastel-champagne: #FFF2DD;
+  --shadow-sm: 0 4px 12px rgba(16, 36, 64, 0.05); --shadow-md: 0 8px 24px rgba(16, 36, 64, 0.08);
+  --radius: 16px; --radius-sm: 10px;
+  --font-heading: 'Playfair Display', serif; --font-body: 'Poppins', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background-color: var(--warm-white); color: var(--navy); font-family: var(--font-body); font-size: 14px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.02em; }
+button { font-family: var(--font-body); cursor: pointer; }
+input, select, textarea { font-family: var(--font-body); font-size: 13px; color: var(--navy); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd2de; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ---------- CUSTOM STYLISH MODALS ---------- */
+.custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(16, 36, 64, 0.6); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: 0.2s; }
+.custom-modal-overlay.active { display: flex; opacity: 1; }
+.custom-modal-box { background: var(--warm-white); width: 90%; max-width: 380px; border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,0.2); border-top: 5px solid var(--gold); padding: 2rem; text-align: center; transform: translateY(20px); transition: 0.2s; }
+.custom-modal-overlay.active .custom-modal-box { transform: translateY(0); }
+.custom-modal-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.custom-modal-title { font-size: 1.4rem; color: var(--navy); margin-bottom: 0.5rem; }
+.custom-modal-message { font-size: 0.9rem; color: #5d6f88; margin-bottom: 1.5rem; line-height: 1.4; }
+.custom-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.custom-modal-btn { padding: 0.7rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; flex: 1; }
+.btn-modal-cancel { background: var(--soft-grey); color: var(--navy); }
+.btn-modal-cancel:hover { background: #e0e4ec; }
+.btn-modal-confirm { background: var(--navy); color: white; }
+.btn-modal-confirm:hover { background: #1c3052; }
+.btn-modal-danger { background: #dc3545; color: white; }
+.btn-modal-danger:hover { background: #c82333; }
