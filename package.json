@@ -1,0 +1,9 @@
+{
+  "name": "sj-billing-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SJ Jewellers billing app (static site)",
+  "scripts": {
+    "build": "echo 'Static site - no build step required'"
+  }
+}
