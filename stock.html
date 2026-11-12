@@ -1,1876 +1,961 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock Inventory · Swarn Jyoti Jewellers</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock · Swarn Jyoti Jewellers</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link rel="stylesheet" href="css/global.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<style>
+  /* Stock page styles · Swarn Jyoti Jewellers */
+/* Summary cards */
+.stock-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stock-summary-card{background:#fff;border-radius:var(--radius);padding:1rem 1.2rem;box-shadow:var(--shadow-sm);border:1px solid #eaedf2;border-left:4px solid var(--gold)}
+.stock-summary-card.gold{border-left-color:#D5A63C}
+.stock-summary-card.silver{border-left-color:#8a9bb0}
+.stock-summary-card.value{border-left-color:#28a745}
+.stock-summary-label{font-size:.7rem;text-transform:uppercase;color:#6b7b94;font-weight:700;letter-spacing:.05em;margin-bottom:.3rem}
+.stock-summary-value{font-size:1.25rem;font-weight:800;color:var(--navy);line-height:1.2}
+.stock-summary-sub{font-size:.68rem;color:#8a9bb0;margin-top:3px}
+@media(max-width:1000px){.stock-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.stock-summary{grid-template-columns:1fr}}
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/layout.css" />
+/* Add form — 9 columns: Name, Metal, Carat, Qty, Weight, Rate, Price, Status, Buttons */
+.add-stock-form{display:grid;grid-template-columns:2fr .8fr .85fr .5fr .8fr .75fr .9fr .8fr auto;gap:8px;margin-bottom:1rem;background:var(--soft-grey);padding:1rem 1.2rem;border-radius:var(--radius);border:1px solid #dce2ea;align-items:end}
+.add-stock-form .field{display:flex;flex-direction:column;gap:3px}
+.add-stock-form label{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6b7b94;letter-spacing:.3px;margin-left:2px;line-height:1.2;min-height:13px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;white-space:nowrap}
+.add-stock-form input,.add-stock-form select,.filter-bar input,.filter-bar select{width:100%;padding:.55rem .65rem;border:1px solid #dce2ea;border-radius:8px;font-family:var(--font-body);font-size:13px;background:#fff;color:var(--navy);box-sizing:border-box}
+.add-stock-form input:focus,.add-stock-form select:focus,.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(213,166,60,.15)}
+.rate-preview{font-size:.62rem;line-height:1.2;color:var(--gold);font-weight:700;text-transform:none;letter-spacing:0;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-add{padding:.55rem 1rem;border:none;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;align-self:end;height:36px}
+.btn-add:hover{background:#c99830}
+.btn-clear,.filter-btn{padding:.55rem .7rem;border:1px solid #dce2ea;border-radius:8px;background:#fff;color:#6b7b94;font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-clear{align-self:end;height:36px}
+.filter-btn{color:var(--navy);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.btn-clear:hover,.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+@media(max-width:1200px){.add-stock-form{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:700px){.add-stock-form{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.add-stock-form{grid-template-columns:1fr}}
 
-  <style>
-    /* ═══════════════════════════════════════════════════════
-       PAGE VARIABLES & BASE
-       ═══════════════════════════════════════════════════════ */
-    :root {
-      --primary-navy: #132B49;
-      --deep-navy: #102440;
-      --gold: #D5A63C;
-      --gold-hover: #BE922D;
-      --bg: #F7F8FA;
-      --surface: #FFFFFF;
-      --border: #E5E9EF;
-      --text-main: #172B46;
-      --text-sub: #718096;
-      --success: #198754;
-      --danger: #DC3545;
-    }
+/* Filters */
+.filter-bar{display:grid;grid-template-columns:2fr 1fr 1fr auto auto;gap:8px;margin-bottom:1rem;align-items:center}
+.result-count{font-size:.75rem;color:#6b7b94;margin:-.5rem 0 .6rem 2px;min-height:1em}
+@media(max-width:900px){.filter-bar{grid-template-columns:1fr 1fr}.filter-bar input{grid-column:1/-1}}
+@media(max-width:500px){.filter-bar{grid-template-columns:1fr 1fr}}
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-    }
+/* Badges */
+.badge-gold{background:#FFF2DD;color:#7a5a00;border:1px solid #f2e0b8}
+.badge-silver{background:#eef0f5;color:#4a5568;border:1px solid #d9dde6}
+.badge-status-instock{background:#E4F5E9;color:#1b6b3f}
+.badge-status-reserved{background:#FFF2DD;color:#7a5a00}
+.badge-status-sold{background:#eef0f5;color:#4a5568}
 
-    /* ═══════════════════════════════════════════════════════
-       HEADER
-       ═══════════════════════════════════════════════════════ */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .header-left h1 {
-      font-size: 1.6rem;
-      color: var(--primary-navy);
-      margin: 0 0 4px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-left h1 i { color: var(--gold); font-size: 1.4rem; }
-    .header-left p { margin: 0; color: var(--text-sub); font-size: 0.9rem; }
+/* Table */
+.table-wrapper{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid #eaedf2;margin-bottom:5rem;overflow:auto;max-height:68vh}
+table.stock-table{width:100%;min-width:980px;border-collapse:collapse;font-size:.82rem}
+table.stock-table th{position:sticky;top:0;z-index:2;text-align:left;padding:10px;background:var(--soft-grey);font-weight:700;font-size:.65rem;text-transform:uppercase;color:#5d6f88;border-bottom:1px solid #dce2ea;letter-spacing:.03em;white-space:nowrap;user-select:none}
+table.stock-table th[data-sort]{cursor:pointer}
+table.stock-table th[data-sort]:hover{color:var(--navy);background:#e8edf5}
+table.stock-table th .sort-ind{opacity:.3;margin-left:4px;font-size:.6rem}
+table.stock-table th.sort-active .sort-ind{opacity:1;color:var(--gold)}
+table.stock-table td{padding:9px 10px;border-bottom:1px solid #f0f2f5;color:var(--navy);vertical-align:middle}
+table.stock-table tr:hover td{background:var(--warm-white)}
+table.stock-table tr.selected td{background:#FFF9EE}
+table.stock-table tr.is-sold td:not(.cb-cell):not(.actions-cell){opacity:.6}
+table.stock-table .num{text-align:right;white-space:nowrap}
+table.stock-table .actions-cell{text-align:center;white-space:nowrap}
+table.stock-table .cb-cell{text-align:center;width:36px}
+table.stock-table input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--gold)}
+.btn-action{background:transparent;border:none;cursor:pointer;font-size:.95rem;padding:4px 6px;border-radius:4px;transition:.15s;margin:0 1px}
+.btn-view{color:#1e466e}.btn-view:hover{color:var(--gold);background:#FFF9EE}
+.btn-edit-stock{color:#D5A63C}.btn-edit-stock:hover{color:#b5892a;background:#FFF9EE}
+.btn-toggle-sold{color:#7a4fbf}.btn-toggle-sold:hover{color:#5a33a3;background:#EDEBFA}
+.btn-dup{color:#6b7b94}.btn-dup:hover{color:var(--navy);background:#eef0f5}
+.btn-delete-stock{color:#dc3545}.btn-delete-stock:hover{color:#a71d2a;background:#FEF2F2}
+.empty-state{text-align:center;padding:3rem 1rem;color:#8a9bb0}
+.empty-state i{font-size:2.5rem;color:#dce2ea;display:block;margin-bottom:12px}
+.empty-state p{margin:0 0 6px;font-size:.95rem;color:#6b7b94}
+.empty-state small{font-size:.8rem}
 
-    .btn-add-new {
-      background: var(--gold);
-      color: var(--deep-navy);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: 0.2s;
-      box-shadow: 0 2px 6px rgba(213,166,60,0.3);
-    }
-    .btn-add-new:hover { background: var(--gold-hover); transform: translateY(-1px); }
+/* Bulk bar */
+.bulk-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--navy);color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(16,36,64,.35);display:flex;align-items:center;gap:10px;z-index:500;transition:transform .25s ease;font-size:.85rem}
+.bulk-bar.visible{transform:translateX(-50%) translateY(0)}
+.bulk-bar .bulk-count{font-weight:700;color:var(--gold)}
+.bulk-bar button{padding:6px 12px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.1);color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.bulk-bar button:hover{background:rgba(255,255,255,.2)}
+.bulk-bar button.danger{background:rgba(220,53,69,.25);border-color:rgba(220,53,69,.5)}
+.bulk-bar button.danger:hover{background:#dc3545}
 
-    /* ═══════════════════════════════════════════════════════
-       SUMMARY CARDS
-       ═══════════════════════════════════════════════════════ */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .summary-card {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 1.2rem 1.4rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-    .summary-card::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 4px; background: var(--gold);
-    }
-    .summary-card.gold::before   { background: var(--gold); }
-    .summary-card.silver::before { background: #A0AEC0; }
-    .summary-card.value::before  { background: var(--success); }
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(16,36,64,.7);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;box-sizing:border-box}
+.modal-overlay.active{display:flex}
+.modal-box{background:#fff;width:100%;max-width:500px;border-radius:var(--radius);padding:1.8rem 2rem;border-top:5px solid var(--gold);box-shadow:0 20px 40px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.modal-title{font-size:1.15rem;font-weight:700;color:var(--navy);margin:0}
+.modal-close{background:none;border:none;font-size:1.5rem;color:#6b7b94;cursor:pointer;line-height:1}
+.form-group{margin-bottom:.9rem}
+.form-group label{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;color:#5d6f88;letter-spacing:.3px;margin-bottom:5px}
+.form-control{width:100%;padding:10px 12px;border:1px solid #dce2ea;border-radius:8px;font-family:var(--font-body);font-size:13px;color:var(--navy);background:#fff;box-sizing:border-box}
+.form-control:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(213,166,60,.12)}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.detail-item{padding:8px 10px;background:var(--soft-grey);border-radius:8px}
+.detail-item-label{font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6b7b94;margin-bottom:2px;letter-spacing:.3px}
+.detail-item-value{font-size:.9rem;font-weight:700;color:var(--navy);word-break:break-word}
+.detail-header{display:flex;align-items:center;gap:10px;padding-bottom:.8rem;margin-bottom:1rem;border-bottom:1px solid #eaedf2}
+.detail-header-icon{width:40px;height:40px;border-radius:10px;background:var(--pastel-champagne);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--gold);flex-shrink:0}
+.detail-header-name{font-size:1.1rem;font-weight:700;color:var(--navy);margin:0}
+.detail-header-sub{font-size:.75rem;color:#8a9bb0;margin-top:2px}
+.modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
+.modal-actions button{padding:8px 14px;border-radius:8px;border:1px solid #dce2ea;background:#fff;color:var(--navy);font-size:.8rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:.15s;flex:1;min-width:90px;justify-content:center}
+.modal-actions button:hover{border-color:var(--gold);color:var(--gold)}
+.modal-actions button.danger{border-color:#dc3545;color:#dc3545}
+.modal-actions button.danger:hover{background:#dc3545;color:#fff}
+.modal-actions button.primary{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.modal-actions button.primary:hover{background:#c99830}
 
-    .summary-top {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 10px;
-    }
-    .summary-title {
-      font-size: 0.75rem; text-transform: uppercase;
-      color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px;
-    }
-    .summary-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--bg); color: var(--primary-navy); font-size: 0.9rem;
-    }
-    .summary-card.gold .summary-icon   { background: #FFF9EE; color: var(--gold); }
-    .summary-card.silver .summary-icon { background: #F1F3F7; color: #4A5568; }
-    .summary-card.value .summary-icon  { background: #E4F5E9; color: var(--success); }
+/* Print */
+.print-header{display:none}
+@media print{
+@page{size:A4 landscape;margin:10mm}
+body *{visibility:hidden}
+.print-area,.print-area *{visibility:visible}
+.print-area{display:block!important;position:absolute;left:0;top:0;width:100%;font-family:'Poppins',sans-serif}
+.print-header{display:block!important;text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #102440}
+.print-header h1{font-family:'Playfair Display',serif;font-size:15pt;margin:0 0 3px;color:#102440}
+.print-header .addr{font-size:8.5pt;color:#555}
+.print-header .doc-title{font-size:11pt;font-weight:700;margin-top:6px;color:#102440;letter-spacing:1px}
+.print-meta{font-size:8pt;color:#666;text-align:right;margin-bottom:6px}
+.print-table{width:100%;border-collapse:collapse;font-size:8pt}
+.print-table th{background:#eaeaea;padding:4px 6px;border:1px solid #333;text-align:left;font-size:7.5pt;text-transform:uppercase}
+.print-table td{padding:4px 6px;border:1px solid #666}
+.print-table .num{text-align:right}
+.print-table thead{display:table-header-group}
+.print-table tr{page-break-inside:avoid}
+.print-footer{margin-top:10px;font-size:8pt;text-align:center;color:#888}
+.print-totals{font-size:9pt;font-weight:700;text-align:right;margin-top:6px}
+}
 
-    .summary-value {
-      font-size: 1.5rem; font-weight: 800;
-      color: var(--text-main); line-height: 1.2; margin-bottom: 4px;
-    }
-    .summary-sub { font-size: 0.75rem; color: var(--text-sub); font-weight: 500; }
-
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 500px)  { .summary-grid { grid-template-columns: 1fr; } }
-
-    /* ═══════════════════════════════════════════════════════
-       TOOLBAR
-       ═══════════════════════════════════════════════════════ */
-    .toolbar {
-      background: var(--surface); border-radius: 12px;
-      padding: 1rem 1.2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border); margin-bottom: 1.5rem;
-      display: flex; flex-direction: column; gap: 1rem;
-    }
-    .toolbar-top {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 15px; flex-wrap: wrap;
-    }
-    .search-box {
-      position: relative; flex: 1; min-width: 250px; max-width: 400px;
-    }
-    .search-box input {
-      width: 100%; padding: 10px 15px 10px 38px;
-      border: 1px solid var(--border); border-radius: 8px;
-      font-family: var(--font-body); font-size: 0.9rem;
-      background: var(--bg); color: var(--text-main); transition: 0.2s;
-    }
-    .search-box input:focus { outline: none; border-color: var(--gold); background: white; box-shadow: 0 0 0 3px rgba(213,166,60,0.1); }
-    .search-box i {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--text-sub); font-size: 0.9rem;
-    }
-    .results-count { font-size: 0.85rem; color: var(--text-sub); font-weight: 500; }
-    .results-count strong { color: var(--text-main); }
-
-    .toolbar-filters {
-      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    }
-    .toolbar-filters select {
-      padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
-      font-family: var(--font-body); font-size: 0.85rem; color: var(--text-main);
-      background: white; cursor: pointer;
-    }
-    .toolbar-filters select:focus { outline: none; border-color: var(--gold); }
-
-    .btn-outline-small {
-      padding: 8px 14px; border: 1px solid var(--border); background: white;
-      color: var(--text-main); border-radius: 8px; font-size: 0.85rem;
-      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
-    }
-    .btn-outline-small:hover { border-color: var(--gold); color: var(--gold); }
-
-    /* ═══════════════════════════════════════════════════════
-       TABLE
-       ═══════════════════════════════════════════════════════ */
-    .table-wrapper {
-      background: var(--surface); border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border);
-      overflow-x: auto; margin-bottom: 2rem;
-    }
-    .stock-table {
-      width: 100%; min-width: 1000px; border-collapse: collapse; font-size: 0.85rem;
-    }
-    .stock-table th {
-      position: sticky; top: 0; z-index: 10;
-      text-align: left; padding: 12px 14px;
-      background: var(--bg); font-weight: 700; font-size: 0.7rem;
-      text-transform: uppercase; color: var(--text-sub);
-      border-bottom: 1px solid var(--border); letter-spacing: 0.5px;
-      white-space: nowrap; cursor: pointer; user-select: none;
-    }
-    .stock-table th:hover { color: var(--primary-navy); background: #eef1f6; }
-    .stock-table th .sort-ind { opacity: 0.3; margin-left: 4px; font-size: 0.65rem; }
-    .stock-table th.sort-active .sort-ind { opacity: 1; color: var(--gold); }
-
-    .stock-table td {
-      padding: 12px 14px; border-bottom: 1px solid var(--border);
-      color: var(--text-main); vertical-align: middle;
-    }
-    .stock-table tr:last-child td { border-bottom: none; }
-    .stock-table tr:hover td { background: #FFFDF9; }
-    .stock-table tr.selected td { background: #FFF9EE; }
-
-    .stock-table .col-cb { width: 40px; text-align: center; }
-    .stock-table .col-num { text-align: right; white-space: nowrap; }
-    .stock-table .col-actions { text-align: center; width: 60px; }
-
-    .stock-table input[type="checkbox"] {
-      width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer;
-    }
-    .item-name { font-weight: 600; color: var(--primary-navy); cursor: pointer; }
-    .item-name:hover { color: var(--gold); text-decoration: underline; }
-
-    /* Badges */
-    .badge {
-      display: inline-block; padding: 3px 10px; border-radius: 12px;
-      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; white-space: nowrap;
-    }
-    .badge-metal-gold   { background: #FFF2DD; color: #7a5a00; border: 1px solid #f2e0b8; }
-    .badge-metal-silver { background: #eef0f5; color: #4a5568; border: 1px solid #d9dde6; }
-
-    .badge-status-instock  { background: #E4F5E9; color: #1b6b3f; }
-    .badge-status-reserved { background: #FFF2DD; color: #7a5a00; }
-    .badge-status-sold     { background: #F1F3F7; color: #718096; }
-
-    /* 3-Dot Menu */
-    .dropdown { position: relative; display: inline-block; }
-    .btn-more {
-      background: transparent; border: none; color: var(--text-sub);
-      width: 32px; height: 32px; border-radius: 6px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s;
-    }
-    .btn-more:hover { background: var(--bg); color: var(--primary-navy); }
-    .dropdown-menu {
-      display: none; position: absolute; right: 0; top: 100%;
-      background: white; min-width: 170px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      border-radius: 8px; border: 1px solid var(--border);
-      z-index: 100; padding: 6px 0; margin-top: 4px;
-    }
-    .dropdown.show .dropdown-menu { display: block; }
-    .dropdown-menu a {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 16px; color: var(--text-main);
-      text-decoration: none; font-size: 0.83rem; font-weight: 500;
-      cursor: pointer; transition: 0.15s;
-    }
-    .dropdown-menu a:hover { background: var(--bg); color: var(--gold); }
-    .dropdown-menu a.text-danger { color: var(--danger); }
-    .dropdown-menu a.text-danger:hover { background: #FEF2F2; color: var(--danger); }
-    .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
-
-    /* Empty States */
-    .empty-cell { padding: 3rem 1rem !important; }
-    .empty-state { text-align: center; color: var(--text-sub); }
-    .empty-state i { font-size: 2.5rem; color: #CBD5E0; margin-bottom: 12px; display: block; }
-    .empty-state h3 { font-size: 1.1rem; color: var(--text-main); margin: 0 0 6px; }
-    .empty-state p { font-size: 0.9rem; margin: 0 0 15px; }
-    .empty-state button { padding: 8px 16px; font-size: 0.85rem; }
-
-    /* ═══════════════════════════════════════════════════════
-       FLOATING BULK ACTIONS
-       ═══════════════════════════════════════════════════════ */
-    .bulk-bar {
-      position: fixed; bottom: 25px; left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--deep-navy); color: white;
-      padding: 12px 20px; border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(16,36,64,0.4);
-      display: flex; align-items: center; gap: 15px;
-      z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .bulk-bar.visible { transform: translateX(-50%) translateY(0); }
-    .bulk-count { font-weight: 700; color: var(--gold); font-size: 1rem; }
-    .bulk-actions { display: flex; gap: 8px; }
-    .bulk-actions button {
-      padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1); color: white;
-      border-radius: 6px; font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; transition: 0.15s; display: inline-flex; align-items: center; gap: 5px;
-    }
-    .bulk-actions button:hover { background: rgba(255,255,255,0.2); }
-    .bulk-actions button.btn-danger { background: rgba(220,53,69,0.2); border-color: rgba(220,53,69,0.4); }
-    .bulk-actions button.btn-danger:hover { background: var(--danger); }
-    .btn-close-bulk {
-      background: transparent; border: none; color: rgba(255,255,255,0.5);
-      font-size: 1.2rem; cursor: pointer; padding: 4px; margin-left: 5px;
-    }
-    .btn-close-bulk:hover { color: white; }
-
-    /* ═══════════════════════════════════════════════════════
-       MODALS (Add / Edit / View)
-       ═══════════════════════════════════════════════════════ */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(16,36,64,0.6);
-      backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center;
-      z-index: 2000; padding: 20px; box-sizing: border-box;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: white; width: 100%; max-width: 600px;
-      border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-      max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column;
-    }
-    .modal-header {
-      padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      background: var(--bg); border-radius: 12px 12px 0 0;
-    }
-    .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0; }
-    .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--text-sub); cursor: pointer; line-height: 1; }
-    .modal-close:hover { color: var(--danger); }
-    .modal-body { padding: 1.5rem; }
-
-    .form-section { margin-bottom: 1.5rem; }
-    .form-section:last-child { margin-bottom: 0; }
-    .form-section-title {
-      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
-      color: var(--text-sub); letter-spacing: 0.5px; margin-bottom: 12px;
-      padding-bottom: 8px; border-bottom: 1px solid var(--border);
-    }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
-    .form-row.single { grid-template-columns: 1fr; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
-    .form-group label .required { color: var(--danger); }
-    .form-control {
-      padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-      font-family: var(--font-body); font-size: 0.9rem; color: var(--text-main);
-      transition: 0.2s; width: 100%; box-sizing: border-box;
-    }
-    .form-control:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(213,166,60,0.1); }
-    .form-control.error { border-color: var(--danger); }
-    .error-text { color: var(--danger); font-size: 0.75rem; display: none; }
-    .error-text.visible { display: block; }
-
-    .modal-footer {
-      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
-      background: var(--bg); border-radius: 0 0 12px 12px;
-      display: flex; justify-content: flex-end; gap: 10px;
-    }
-    .btn-secondary {
-      padding: 10px 20px; border: 1px solid var(--border); background: white;
-      color: var(--text-main); border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
-    }
-    .btn-secondary:hover { background: var(--bg); }
-    .btn-primary {
-      padding: 10px 20px; background: var(--gold); color: var(--deep-navy);
-      border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
-      transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-primary:hover { background: var(--gold-hover); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* View Details Grid */
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .detail-box { padding: 12px; background: var(--bg); border-radius: 8px; }
-    .detail-box.full { grid-column: 1 / -1; }
-    .detail-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px; }
-    .detail-value { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
-    .detail-value.highlight { color: var(--gold); font-size: 1.2rem; font-weight: 800; }
-
-    /* ═════ PRINT ═════ */
-    .print-header { display: none; }
-    @media print {
-      @page { size: A4 landscape; margin: 10mm; }
-      body * { visibility: hidden; }
-      .print-area, .print-area * { visibility: visible; }
-      .print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-    }
-  </style>
+/* Polish */
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-action:focus-visible,.modal-close:focus-visible{border-radius:6px}
+table.stock-table tbody tr{transition:background .12s}
+.bulk-bar{max-width:calc(100vw - 24px);flex-wrap:wrap;justify-content:center}
+@media(max-width:600px){.modal-box{padding:1.3rem 1.1rem}.form-row-2,.form-row-3,.detail-grid{grid-template-columns:1fr}.detail-item[style]{grid-column:auto!important}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-  <div id="app-layout">
-    <aside class="sidebar">
-      <div class="logo">
-        <img src="assets/image/icon-sj.jpg" alt="Logo" />
-        <div class="logo-text">Swarn Jyoti <span>Jewellers</span></div>
-      </div>
-      <nav>
-        <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="invoice.html" class="nav-item"><i class="fas fa-file-invoice"></i> Invoice Maker</a>
-        <a href="paid-due.html" class="nav-item"><i class="fas fa-receipt"></i> Paid &amp; Due</a>
-        <a href="stock.html" class="nav-item active"><i class="fas fa-boxes"></i> Stock</a>
-        <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
-      </nav>
-      <div class="sidebar-footer">
-        <p>© 2026 Swarn Jyoti</p>
-        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <!-- HEADER -->
-      <div class="page-header">
-        <div class="header-left">
-          <h1><i class="fas fa-boxes"></i> Stock Inventory</h1>
-          <p>Manage your jewellery inventory.</p>
-        </div>
-        <div class="header-actions">
-          <button class="btn-add-new" onclick="openAddModal()">
-            <i class="fas fa-plus"></i> Add New Item
-          </button>
-        </div>
-      </div>
-
-      <!-- SUMMARY CARDS -->
-      <div class="summary-grid">
-        <div class="summary-card">
-          <div class="summary-top">
-            <span class="summary-title">Total Items</span>
-            <div class="summary-icon"><i class="fas fa-box"></i></div>
-          </div>
-          <div class="summary-value" id="sum-total-items">0</div>
-          <div class="summary-sub" id="sum-items-sub">0 in stock · 0 sold</div>
-        </div>
-        <div class="summary-card gold">
-          <div class="summary-top">
-            <span class="summary-title">Gold Stock</span>
-            <div class="summary-icon"><i class="fas fa-coins"></i></div>
-          </div>
-          <div class="summary-value" id="sum-gold">0.000 g</div>
-          <div class="summary-sub" id="sum-gold-sub">0 items</div>
-        </div>
-        <div class="summary-card silver">
-          <div class="summary-top">
-            <span class="summary-title">Silver Stock</span>
-            <div class="summary-icon"><i class="fas fa-ring"></i></div>
-          </div>
-          <div class="summary-value" id="sum-silver">0.000 g</div>
-          <div class="summary-sub" id="sum-silver-sub">0 items</div>
-        </div>
-        <div class="summary-card value">
-          <div class="summary-top">
-            <span class="summary-title">Total Value</span>
-            <div class="summary-icon"><i class="fas fa-rupee-sign"></i></div>
-          </div>
-          <div class="summary-value" id="sum-value">₹0</div>
-          <div class="summary-sub" id="sum-value-sub">Avg ₹0/g</div>
-        </div>
-      </div>
-
-      <!-- TOOLBAR -->
-      <div class="toolbar">
-        <div class="toolbar-top">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="search-input" placeholder="Search by item name, category, or carat…" oninput="applyFilters()" />
-          </div>
-          <div class="results-count" id="results-count">Showing <strong>0</strong> results</div>
-        </div>
-        <div class="toolbar-filters">
-          <select id="filter-metal" onchange="applyFilters()">
-            <option value="">All Metals</option>
-            <option value="Gold">Gold</option>
-            <option value="Silver">Silver</option>
-          </select>
-          <select id="filter-cat" onchange="applyFilters()">
-            <option value="">All Categories</option>
-          </select>
-          <select id="filter-status" onchange="applyFilters()">
-            <option value="">All Statuses</option>
-            <option value="In Stock">In Stock</option>
-            <option value="Reserved">Reserved</option>
-            <option value="Sold">Sold</option>
-          </select>
-          <button class="btn-outline-small" onclick="resetStockFilters()">
-            <i class="fas fa-undo"></i> Reset
-          </button>
-          <button class="btn-outline-small" onclick="exportCSV()">
-            <i class="fas fa-file-csv"></i> Export
-          </button>
-          <button class="btn-outline-small" onclick="printStockList()">
-            <i class="fas fa-print"></i> Print
-          </button>
-        </div>
-      </div>
-
-      <!-- TABLE -->
-      <div class="table-wrapper">
-        <table class="stock-table" id="stock-table">
-          <thead>
-            <tr>
-              <th class="col-cb"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" /></th>
-              <th data-sort="item">Item Name <span class="sort-ind">⇅</span></th>
-              <th data-sort="metal">Metal <span class="sort-ind">⇅</span></th>
-              <th data-sort="carat">Carat / Purity <span class="sort-ind">⇅</span></th>
-              <th data-sort="cat">Category <span class="sort-ind">⇅</span></th>
-              <th data-sort="weight" class="col-num">Weight <span class="sort-ind">⇅</span></th>
-              <th data-sort="price" class="col-num">Price <span class="sort-ind">⇅</span></th>
-              <th data-sort="status">Status <span class="sort-ind">⇅</span></th>
-              <th class="col-actions"></th>
-            </tr>
-          </thead>
-          <tbody id="stock-body">
-            <!-- Rendered via JS -->
-          </tbody>
-        </table>
-      </div>
-
-    </main>
-  </div>
-
-  <!-- BULK ACTIONS BAR -->
-  <div class="bulk-bar" id="bulk-bar">
-    <span><span class="bulk-count" id="bulk-count">0</span> selected</span>
-    <div class="bulk-actions">
-      <button onclick="bulkMarkSold()"><i class="fas fa-check"></i> Mark Sold</button>
-      <button onclick="bulkMarkInStock()"><i class="fas fa-undo"></i> Mark In Stock</button>
-      <button class="btn-danger" onclick="bulkDelete()"><i class="fas fa-trash"></i> Delete</button>
+<div id="app-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="assets/image/icon-sj.jpg" alt="Logo" />
+      <div class="logo-text">Swarn Jyoti <span>Jewellers</span></div>
     </div>
-    <button class="btn-close-bulk" onclick="clearSelection()"><i class="fas fa-times"></i></button>
-  </div>
+    <nav>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a href="invoice.html" class="nav-item"><i class="fas fa-file-invoice"></i> Invoice Maker</a>
+      <a href="paid-due.html" class="nav-item"><i class="fas fa-receipt"></i> Paid &amp; Due</a>
+      <a href="stock.html" class="nav-item active"><i class="fas fa-boxes"></i> Stock</a>
+      <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <p>© 2026 Swarn Jyoti</p>
+      <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
 
-  <!-- MODAL: ADD ITEM -->
-  <div id="add-modal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 class="modal-title">Add New Item</h3>
-        <button class="modal-close" onclick="closeAddModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-section">
-          <div class="form-section-title">Basic Information</div>
-          <div class="form-row single">
-            <div class="form-group">
-              <label>Item Name <span class="required">*</span></label>
-              <input type="text" id="add-name" class="form-control" placeholder="e.g. Gold Ring" oninput="clearError('add-name')" />
-              <span class="error-text" id="err-add-name">Item name is required</span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Metal Type</label>
-              <select id="add-metal" class="form-control" onchange="onAddMetalChange()">
-                <option value="Gold">Gold</option>
-                <option value="Silver">Silver</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Carat / Purity</label>
-              <select id="add-carat" class="form-control">
-                <option value="24K">24K</option>
-                <option value="22K" selected>22K</option>
-                <option value="18K">18K</option>
-                <option value="14K">14K</option>
-                <option value="9K">9K</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Category</label>
-              <input type="text" id="add-cat" class="form-control" list="cat-suggestions" placeholder="e.g. Ring" />
-            </div>
-            <div class="form-group">
-              <label>Status</label>
-              <select id="add-status" class="form-control">
-                <option value="In Stock">In Stock</option>
-                <option value="Reserved">Reserved</option>
-                <option value="Sold">Sold</option>
-              </select>
-            </div>
-          </div>
-        </div>
+  <main class="main-content">
+    <div class="page-header"><h1><i class="fas fa-boxes"></i> Stock Inventory</h1></div>
 
-        <div class="form-section">
-          <div class="form-section-title">Weight &amp; Price</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Weight (g) <span class="required">*</span></label>
-              <input type="number" id="add-weight" class="form-control" placeholder="0.000" step="0.001" min="0" oninput="clearError('add-weight')" />
-              <span class="error-text" id="err-add-weight">Valid weight is required</span>
-            </div>
-            <div class="form-group">
-              <label>Price (₹) <span class="required">*</span></label>
-              <input type="number" id="add-price" class="form-control" placeholder="0" step="1" min="0" oninput="clearError('add-price')" />
-              <span class="error-text" id="err-add-price">Valid price is required</span>
-            </div>
-          </div>
-        </div>
+    <div class="stock-summary">
+      <div class="stock-summary-card">
+        <p class="stock-summary-label">Total Items</p>
+        <p class="stock-summary-value" id="sum-items">0</p>
+        <p class="stock-summary-sub" id="sum-items-sub">0 in stock · 0 reserved · 0 sold</p>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
-        <button class="btn-primary" id="btn-save-add" onclick="saveNewItem()"><i class="fas fa-save"></i> Save Item</button>
+      <div class="stock-summary-card gold">
+        <p class="stock-summary-label">Gold (unsold)</p>
+        <p class="stock-summary-value" id="sum-gold">0.000 g</p>
+        <p class="stock-summary-sub" id="sum-gold-sub">0 pcs</p>
+      </div>
+      <div class="stock-summary-card silver">
+        <p class="stock-summary-label">Silver (unsold)</p>
+        <p class="stock-summary-value" id="sum-silver">0.000 g</p>
+        <p class="stock-summary-sub" id="sum-silver-sub">0 pcs</p>
+      </div>
+      <div class="stock-summary-card value">
+        <p class="stock-summary-label">Stock Value (unsold)</p>
+        <p class="stock-summary-value" id="sum-value">₹0</p>
+        <p class="stock-summary-sub" id="sum-value-sub">Avg ₹0/g</p>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL: EDIT ITEM -->
-  <div id="edit-modal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 class="modal-title">Edit Item</h3>
-        <button class="modal-close" onclick="closeEditModal()">&times;</button>
-      </div>
-      <input type="hidden" id="edit-id" />
-      <div class="modal-body">
-        <div class="form-section">
-          <div class="form-section-title">Basic Information</div>
-          <div class="form-row single">
-            <div class="form-group">
-              <label>Item Name <span class="required">*</span></label>
-              <input type="text" id="edit-name" class="form-control" oninput="clearError('edit-name')" />
-              <span class="error-text" id="err-edit-name">Item name is required</span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Metal Type</label>
-              <select id="edit-metal" class="form-control">
-                <option value="Gold">Gold</option>
-                <option value="Silver">Silver</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Carat / Purity</label>
-              <input type="text" id="edit-carat" class="form-control" placeholder="e.g. 22K or 999" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Category</label>
-              <input type="text" id="edit-cat" class="form-control" list="cat-suggestions" />
-            </div>
-            <div class="form-group">
-              <label>Status</label>
-              <select id="edit-status" class="form-control">
-                <option value="In Stock">In Stock</option>
-                <option value="Reserved">Reserved</option>
-                <option value="Sold">Sold</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-section-title">Weight &amp; Price</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Weight (g) <span class="required">*</span></label>
-              <input type="number" id="edit-weight" class="form-control" step="0.001" min="0" oninput="clearError('edit-weight')" />
-              <span class="error-text" id="err-edit-weight">Valid weight is required</span>
-            </div>
-            <div class="form-group">
-              <label>Price (₹) <span class="required">*</span></label>
-              <input type="number" id="edit-price" class="form-control" step="1" min="0" oninput="clearError('edit-price')" />
-              <span class="error-text" id="err-edit-price">Valid price is required</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
-        <button class="btn-primary" id="btn-save-edit" onclick="saveStockEdit()"><i class="fas fa-save"></i> Save Changes</button>
+    <div class="add-stock-form" id="add-form">
+      <div class="field"><label for="stk-name">Item Name *</label><input type="text" id="stk-name" placeholder="e.g. Gold Ring" /></div>
+      <div class="field"><label for="stk-metal">Metal</label>
+        <select id="stk-metal"><option value="Gold">Gold</option><option value="Silver">Silver</option></select></div>
+      <div class="field"><label for="stk-carat">Carat / Purity</label><select id="stk-carat"></select></div>
+      <div class="field"><label for="stk-qty">Qty</label>
+        <input type="number" id="stk-qty" placeholder="1" step="1" min="1" value="1" /></div>
+      <div class="field"><label for="stk-weight">Weight/pc (g) *</label>
+        <input type="number" id="stk-weight" placeholder="0.000" step="0.001" min="0" /></div>
+      <div class="field"><label for="stk-rate">Rate/g (₹)</label>
+        <input type="number" id="stk-rate" placeholder="0" step="0.01" min="0" /></div>
+      <div class="field"><label for="stk-price"><span>Price/pc (₹) *</span><span class="rate-preview" id="rate-preview"></span></label>
+        <input type="number" id="stk-price" placeholder="0" step="1" min="0" /></div>
+      <div class="field"><label for="stk-status">Status</label>
+        <select id="stk-status"><option>In Stock</option><option>Reserved</option><option>Sold</option></select></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-add" id="btn-save-stock"><i class="fas fa-plus"></i> Add</button>
+        <button class="btn-clear" id="btn-clear-form" title="Clear form" aria-label="Clear form"><i class="fas fa-times"></i></button>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL: VIEW ITEM -->
-  <div id="view-modal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 class="modal-title">Item Details</h3>
-        <button class="modal-close" onclick="closeViewModal()">&times;</button>
-      </div>
-      <div class="modal-body" id="view-content">
-        <!-- Rendered dynamically -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeViewModal()">Close</button>
-        <button class="btn-primary" id="btn-edit-from-view" onclick="editFromView()"><i class="fas fa-edit"></i> Edit Item</button>
+    <div class="filter-bar">
+      <input type="text" id="filter-search" placeholder="🔍 Search stock items…" aria-label="Search stock" />
+      <select id="filter-metal" aria-label="Filter by metal"><option value="">All Metals</option><option>Gold</option><option>Silver</option></select>
+      <select id="filter-status" aria-label="Filter by status"><option value="">All Statuses</option><option>In Stock</option><option>Reserved</option><option>Sold</option></select>
+      <button class="filter-btn" id="btn-reset" title="Reset filters"><i class="fas fa-undo"></i> Reset</button>
+      <div style="display:flex;gap:4px;">
+        <button class="filter-btn" id="btn-csv" title="Download visible items as CSV"><i class="fas fa-file-csv"></i> CSV</button>
+        <button class="filter-btn" id="btn-print" title="Print visible list" aria-label="Print"><i class="fas fa-print"></i></button>
       </div>
     </div>
+    <div class="result-count" id="result-count"></div>
+
+    <div class="table-wrapper">
+      <table class="stock-table" id="stock-table">
+        <thead>
+          <tr>
+            <th class="cb-cell"><input type="checkbox" id="select-all" aria-label="Select all visible" /></th>
+            <th data-sort="item">Item Name <span class="sort-ind">⇅</span></th>
+            <th data-sort="qty" style="text-align:center;">Qty <span class="sort-ind">⇅</span></th>
+            <th data-sort="metal">Metal <span class="sort-ind">⇅</span></th>
+            <th data-sort="carat">Carat <span class="sort-ind">⇅</span></th>
+            <th data-sort="weight" style="text-align:right;">Weight/pc (g) <span class="sort-ind">⇅</span></th>
+            <th data-sort="rate" style="text-align:right;">Rate/g <span class="sort-ind">⇅</span></th>
+            <th data-sort="price" style="text-align:right;">Price/pc (₹) <span class="sort-ind">⇅</span></th>
+            <th data-sort="status">Status <span class="sort-ind">⇅</span></th>
+            <th style="text-align:center;cursor:default;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="stock-body"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div id="bulk-bar" class="bulk-bar">
+  <span><span class="bulk-count" id="bulk-count">0</span> selected</span>
+  <button id="bulk-sold"><i class="fas fa-check"></i> Mark Sold</button>
+  <button id="bulk-instock"><i class="fas fa-undo"></i> Mark In Stock</button>
+  <button class="danger" id="bulk-delete"><i class="fas fa-trash"></i> Delete</button>
+  <button id="bulk-clear" aria-label="Clear selection"><i class="fas fa-times"></i></button>
+</div>
+
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Stock Item</h3>
+      <button class="modal-close" onclick="closeEditModal()" aria-label="Close">&times;</button>
+    </div>
+    <input type="hidden" id="edit-id" />
+    <div class="form-group"><label>Item Name *</label><input type="text" id="edit-name" class="form-control" /></div>
+    <div class="form-row-2">
+      <div class="form-group"><label>Metal</label>
+        <select id="edit-metal" class="form-control"><option value="Gold">Gold</option><option value="Silver">Silver</option></select></div>
+      <div class="form-group"><label>Carat / Purity</label>
+        <input type="text" id="edit-carat" class="form-control" list="edit-carat-list" placeholder="e.g. 22K or 999" />
+        <datalist id="edit-carat-list"></datalist></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-group"><label>Qty (pcs) *</label><input type="number" id="edit-qty" class="form-control" step="1" min="1" /></div>
+      <div class="form-group"><label>Status</label>
+        <select id="edit-status" class="form-control"><option>In Stock</option><option>Reserved</option><option>Sold</option></select></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>Weight/pc (g) *</label><input type="number" id="edit-weight" class="form-control" step="0.001" min="0" /></div>
+      <div class="form-group"><label>Rate/g (₹)</label><input type="number" id="edit-rate" class="form-control" step="0.01" min="0" /></div>
+      <div class="form-group"><label>Price/pc (₹) *</label><input type="number" id="edit-price" class="form-control" step="1" min="0" /></div>
+    </div>
+    <button class="btn-gold" style="width:100%;margin-top:.4rem;" onclick="saveStockEdit()"><i class="fas fa-save"></i> Save Changes</button>
   </div>
+</div>
 
-  <!-- Hidden datalist for category suggestions -->
-  <datalist id="cat-suggestions">
-    <option value="Ring"></option>
-    <option value="Chain"></option>
-    <option value="Necklace"></option>
-    <option value="Bangle"></option>
-    <option value="Bracelet"></option>
-    <option value="Earring"></option>
-    <option value="Pendant"></option>
-    <option value="Nose Pin"></option>
-    <option value="Anklet"></option>
-    <option value="Coin"></option>
-    <option value="Bar"></option>
-    <option value="Ornament"></option>
-    <option value="Ornaments"></option>
-  </datalist>
+<div id="view-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title">Item Details</h3>
+      <button class="modal-close" onclick="closeViewModal()" aria-label="Close">&times;</button>
+    </div>
+    <div id="view-content"></div>
+    <div class="modal-actions" id="view-actions"></div>
+  </div>
+</div>
 
-  <script src="js/app.js"></script>
-  <script src="js/db.js"></script>
+<div id="print-area" class="print-area" style="display:none;">
+  <div class="print-header">
+    <h1>SWARN JYOTI JEWELLERS</h1>
+    <div class="addr">Soni Gali, Sasamusa, Gopalganj, Bihar - 841505 · Ph: 9939332968</div>
+    <div class="doc-title">STOCK INVENTORY</div>
+  </div>
+  <div class="print-meta">Printed: <span id="print-date"></span></div>
+  <table class="print-table" id="print-table">
+    <thead><tr>
+      <th style="width:4%;">#</th><th style="width:24%;">Item</th><th style="width:6%;" class="num">Qty</th>
+      <th style="width:9%;">Metal</th><th style="width:8%;">Carat</th>
+      <th style="width:11%;" class="num">Total Wt</th><th style="width:11%;" class="num">Rate/g</th>
+      <th style="width:13%;" class="num">Total Price</th><th style="width:10%;">Status</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="print-totals" id="print-totals"></div>
+  <div class="print-footer">Computer generated inventory list</div>
+</div>
 
-  <script>
-  /* ═══════════════════════════════════════════════════════════════
-     SWARN JYOTI JEWELLERS — STOCK INVENTORY CONTROLLER
-     Everything is inside one IIFE. No stray HTML inside JS strings,
-     no literal closing-script sequences anywhere in this block.
-     ═══════════════════════════════════════════════════════════════ */
-  (function () {
-    'use strict';
+<script src="js/app.js"></script>
+<script src="js/db.js"></script>
+<script>
+/* ── Constants & state ── */
+const CARATS = { Gold: ['24K', '22K', '18K', '14K', '9K'], Silver: ['999', '925', '800', 'Other'] };
+const selectedIds = new Set();
+let sortColumn = null, sortDirection = 'asc';
 
-    /* ─────────── CONSTANTS ─────────── */
-    var GOLD_CARATS   = ['24K', '22K', '18K', '14K', '9K'];
-    var SILVER_CARATS = ['999', '925', '800', 'Other'];
+/* ── Helpers ── */
+const $ = id => document.getElementById(id);
+const escapeHtml = s => s == null ? '' : String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const toNum = (v, d = 0) => { const n = parseFloat(v); return isFinite(n) ? n : d; };
+const fmt = n => '₹' + Math.round(toNum(n)).toLocaleString('en-IN');
+const fmtRate = n => { const x = toNum(n); if (x <= 0) return ''; return String(Math.round(x * 100) / 100); };
+const newId = () => `STK-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+const rateOf = it => { const w = toNum(it.weight); return w > 0 ? toNum(it.price) / w : 0; };
+const qtyOf = it => { const q = parseInt(it.qty, 10); return isFinite(q) && q >= 1 ? q : 1; };
+const statusClass = s => s === 'Sold' ? 'badge-status-sold' : s === 'Reserved' ? 'badge-status-reserved' : 'badge-status-instock';
+const getItems = () => DB.getData().stock || [];
+const visibleRows = () => Array.from(document.querySelectorAll('#stock-body tr[data-id]')).filter(r => r.style.display !== 'none');
+const refresh = () => { renderSummary(); renderStock(); };
 
-    /* ─────────── STATE ─────────── */
-    var selectedIds   = new Set();
-    var currentViewId = null;
-    var sortColumn    = null;
-    var sortDirection = 'asc';
+function ensureIds() {
+  const data = DB.getData();
+  let changed = false;
+  (data.stock || []).forEach(it => {
+    if (!it.id) { it.id = newId(); changed = true; }
+    if (it.status === undefined) { it.status = 'In Stock'; changed = true; }
+    if (it.qty === undefined || it.qty === null || it.qty === '') { it.qty = 1; changed = true; }
+  });
+  if (changed) DB.saveData(data);
+}
 
-    /* ═══════════════════════════════════════════════════════
-       SMALL UTILITIES
-       ═══════════════════════════════════════════════════════ */
-    function escapeHtml(value) {
-      if (value === undefined || value === null) return '';
-      return String(value).replace(/[&<>"']/g, function (ch) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
-      });
+/* Mutate stock inside one read/save cycle */
+function updateStock(fn) {
+  const data = DB.getData();
+  data.stock = data.stock || [];
+  fn(data.stock);
+  DB.saveData(data);
+}
+
+/* DB.addStock whitelists fields, so qty would be dropped.
+   Insert via DB, then re-apply qty through DB.saveData — same layer, second pass. */
+function addStockRecord(payload) {
+  const before = new Set(getItems().map(i => i.id));
+  if (typeof DB.addStock === 'function') DB.addStock(payload);
+  else {
+    const data = DB.getData();
+    data.stock = data.stock || [];
+    data.stock.push(Object.assign({ id: newId() }, payload));
+    DB.saveData(data);
+  }
+  let created = null;
+  updateStock(stock => {
+    created = stock.find(i => !before.has(i.id)) || null;
+    if (created && payload.qty != null) created.qty = payload.qty;
+  });
+  return created;
+}
+
+function confirmThen(title, msg, onYes) {
+  if (typeof showConfirm === 'function') showConfirm(title, msg, 'Yes, Delete', 'Cancel', onYes);
+  else if (confirm(title + '\n' + msg)) onYes();
+}
+
+/* ── Rate lookup from Settings ── */
+function getRateForMetalCarat(metal, carat) {
+  try {
+    const settings = DB.getData().settings || {};
+    const rc = settings.rateConfig || {};
+    if (metal === 'Gold') return Number((rc.goldOrnaments || {})[carat]) || 0;
+    if (carat === '999') return Number(rc.silver999?.rate) || 0;
+    if (carat === '925') return Number(rc.silverOrnaments?.tunch?.['92.5']?.rate) || 0;
+    if (carat === '800') return Number(rc.silverOrnaments?.tunch?.['80']?.rate) || 0;
+    return 0;
+  } catch (e) { return 0; }
+}
+
+/* ── Add form — bidirectional weight ⇄ rate ⇄ price sync ── */
+function onAddMetalChange() {
+  const metal = $('stk-metal').value;
+  const def = metal === 'Gold' ? 1 : 0;
+  $('stk-carat').innerHTML = CARATS[metal].map((c, i) => `<option value="${c}"${i === def ? ' selected' : ''}>${c}</option>`).join('');
+  fillAddRate();
+}
+
+function fillAddRate() {
+  const r = getRateForMetalCarat($('stk-metal').value, $('stk-carat').value);
+  $('stk-rate').value = r > 0 ? r : '';
+  const w = toNum($('stk-weight').value);
+  if (w > 0 && r > 0) $('stk-price').value = Math.round(w * r);
+  updateQtyPreview();
+}
+
+function onAddRateInput() {
+  const w = toNum($('stk-weight').value);
+  const r = toNum($('stk-rate').value);
+  if (w > 0 && r > 0) $('stk-price').value = Math.round(w * r);
+  updateQtyPreview();
+}
+
+function onAddWeightInput() {
+  const w = toNum($('stk-weight').value);
+  const r = toNum($('stk-rate').value);
+  const p = toNum($('stk-price').value);
+  if (w > 0) {
+    if (r > 0) $('stk-price').value = Math.round(w * r);
+    else if (p > 0) $('stk-rate').value = fmtRate(p / w);
+  }
+  updateQtyPreview();
+}
+
+function onAddPriceInput() {
+  const w = toNum($('stk-weight').value);
+  const p = toNum($('stk-price').value);
+  if (w > 0 && p > 0) $('stk-rate').value = fmtRate(p / w);
+  updateQtyPreview();
+}
+
+function updateQtyPreview() {
+  const qty = parseInt($('stk-qty').value, 10) || 1;
+  const p = toNum($('stk-price').value);
+  $('rate-preview').innerText = (qty > 1 && p > 0) ? `×${qty} = ${fmt(p * qty)}` : '';
+}
+
+function clearAddForm() {
+  ['stk-name', 'stk-weight', 'stk-price'].forEach(id => $(id).value = '');
+  $('stk-qty').value = '1';
+  $('stk-metal').value = 'Gold';
+  onAddMetalChange();          // rebuilds carats and re-fills rate from settings
+  $('stk-status').value = 'In Stock';
+  updateQtyPreview();
+  $('stk-name').focus();
+}
+
+function addStock() {
+  const name = $('stk-name').value.trim();
+  const qty = parseInt($('stk-qty').value, 10);
+  const weight = parseFloat($('stk-weight').value);
+  const price = parseFloat($('stk-price').value);
+  if (!name) return showAlert('Please enter the item name.', 'error');
+  if (isNaN(qty) || qty < 1) return showAlert('Quantity must be at least 1.', 'error');
+  if (isNaN(weight) || weight <= 0) return showAlert('Weight must be greater than zero.', 'error');
+  if (isNaN(price) || price <= 0) return showAlert('Price must be greater than zero.', 'error');
+
+  let created;
+  try {
+    created = addStockRecord({
+      item: name, metal: $('stk-metal').value, carat: $('stk-carat').value || '-',
+      qty: qty, weight: String(weight), price: String(price), status: $('stk-status').value
+    });
+  } catch (err) { return showAlert('Failed to add item: ' + (err.message || err), 'error'); }
+
+  if (!created) return showAlert('The item could not be saved. Please try again.', 'error');
+  if (qtyOf(created) !== qty) return showAlert(`Item saved, but quantity stored as ${qtyOf(created)}. Please edit to correct.`, 'error');
+
+  clearAddForm();
+  refresh();
+  showAlert(`Item added successfully (${qty} pc${qty === 1 ? '' : 's'}).`, 'success');
+}
+
+/* ── Summary (unsold items only, totals × qty) ── */
+function renderSummary() {
+  const items = getItems();
+  let goldWt = 0, goldPcs = 0, silverWt = 0, silverPcs = 0;
+  let value = 0, weight = 0;
+  let availQty = 0, reservedQty = 0, soldQty = 0, totalQty = 0;
+
+  items.forEach(it => {
+    const qty = qtyOf(it);
+    const st = it.status || 'In Stock';
+    totalQty += qty;
+    if (st === 'Sold') { soldQty += qty; return; }
+    if (st === 'Reserved') reservedQty += qty; else availQty += qty;
+    const w = toNum(it.weight) * qty;
+    const p = toNum(it.price) * qty;
+    value += p; weight += w;
+    if ((it.metal || 'Gold') === 'Gold') { goldWt += w; goldPcs += qty; }
+    else { silverWt += w; silverPcs += qty; }
+  });
+
+  const pcs = n => n + ' pc' + (n === 1 ? '' : 's');
+  $('sum-items').innerText = totalQty;
+  $('sum-items-sub').innerText = `${availQty} in stock · ${reservedQty} reserved · ${soldQty} sold`;
+  $('sum-gold').innerText = goldWt.toFixed(3) + ' g';
+  $('sum-gold-sub').innerText = pcs(goldPcs);
+  $('sum-silver').innerText = silverWt.toFixed(3) + ' g';
+  $('sum-silver-sub').innerText = pcs(silverPcs);
+  $('sum-value').innerText = fmt(value);
+  $('sum-value-sub').innerText = 'Avg ' + fmt(weight > 0 ? value / weight : 0) + '/g';
+}
+
+/* ── Table ── */
+function getSortValue(it, col) {
+  switch (col) {
+    case 'item':   return String(it.item || '').toLowerCase();
+    case 'qty':    return qtyOf(it);
+    case 'metal':  return String(it.metal || 'Gold').toLowerCase();
+    case 'carat':  return String(it.carat || '-').toLowerCase();
+    case 'weight': return toNum(it.weight);
+    case 'rate':   return rateOf(it);
+    case 'price':  return toNum(it.price);
+    case 'status': return String(it.status || 'In Stock').toLowerCase();
+    default:       return 0;
+  }
+}
+
+function renderStock() {
+  const items = getItems();
+  const tbody = $('stock-body');
+
+  // drop selections whose items no longer exist
+  const existing = new Set(items.map(i => i.id));
+  selectedIds.forEach(id => { if (!existing.has(id)) selectedIds.delete(id); });
+
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fas fa-box-open"></i>
+      <p>Inventory is empty</p><small>Add your first item using the form above.</small></div></td></tr>`;
+    $('select-all').checked = false;
+    $('result-count').textContent = '';
+    updateBulkBar();
+    return;
+  }
+
+  const display = items.slice();
+  if (sortColumn) {
+    display.sort((a, b) => {
+      const va = getSortValue(a, sortColumn), vb = getSortValue(b, sortColumn);
+      return va < vb ? (sortDirection === 'asc' ? -1 : 1) : va > vb ? (sortDirection === 'asc' ? 1 : -1) : 0;
+    });
+  } else display.reverse(); // newest first
+
+  tbody.innerHTML = display.map(item => {
+    const id = escapeHtml(item.id);
+    const metal = item.metal || 'Gold';
+    const carat = item.carat && item.carat !== '-' ? item.carat : '—';
+    const qty = qtyOf(item);
+    const wt = toNum(item.weight), price = toNum(item.price), rate = rateOf(item);
+    const status = item.status || 'In Stock';
+    const checked = selectedIds.has(item.id);
+    return `
+      <tr data-id="${id}" data-metal="${escapeHtml(metal)}" data-status="${escapeHtml(status)}" class="${checked ? 'selected ' : ''}${status === 'Sold' ? 'is-sold' : ''}">
+        <td class="cb-cell"><input type="checkbox" data-act="select" aria-label="Select item" ${checked ? 'checked' : ''} /></td>
+        <td style="font-weight:600;">${escapeHtml(item.item)}</td>
+        <td style="text-align:center;font-weight:700;">${qty}</td>
+        <td><span class="badge ${metal === 'Gold' ? 'badge-gold' : 'badge-silver'}">${escapeHtml(metal)}</span></td>
+        <td>${escapeHtml(carat)}</td>
+        <td class="num">${wt.toFixed(3)} g</td>
+        <td class="num">${rate > 0 ? fmt(rate) : '—'}</td>
+        <td class="num" style="font-weight:700;">${fmt(price)}</td>
+        <td><span class="badge ${statusClass(status)}">${escapeHtml(status)}</span></td>
+        <td class="actions-cell">
+          <button class="btn-action btn-view" data-act="view" title="View" aria-label="View"><i class="fas fa-eye"></i></button>
+          <button class="btn-action btn-edit-stock" data-act="edit" title="Edit" aria-label="Edit"><i class="fas fa-edit"></i></button>
+          <button class="btn-action btn-toggle-sold" data-act="toggle" title="${status === 'Sold' ? 'Mark In Stock' : 'Mark Sold'}" aria-label="Toggle sold"><i class="fas fa-${status === 'Sold' ? 'undo' : 'check'}"></i></button>
+          <button class="btn-action btn-dup" data-act="dup" title="Duplicate" aria-label="Duplicate"><i class="fas fa-copy"></i></button>
+          <button class="btn-action btn-delete-stock" data-act="delete" title="Delete" aria-label="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.querySelectorAll('#stock-table th[data-sort]').forEach(th => {
+    const active = th.dataset.sort === sortColumn;
+    th.classList.toggle('sort-active', active);
+    th.querySelector('.sort-ind').textContent = active ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅';
+  });
+
+  applyFilters();
+}
+
+/* ── Filters ── */
+function applyFilters() {
+  const q = $('filter-search').value.trim().toLowerCase();
+  const metal = $('filter-metal').value, status = $('filter-status').value;
+  let shown = 0, total = 0;
+
+  document.querySelectorAll('#stock-body tr[data-id]').forEach(row => {
+    total++;
+    const show = (!q || row.innerText.toLowerCase().includes(q)) &&
+      (!metal || row.dataset.metal === metal) &&
+      (!status || row.dataset.status === status);
+    row.style.display = show ? '' : 'none';
+    if (show) shown++;
+    else if (selectedIds.delete(row.dataset.id)) {
+      row.classList.remove('selected');
+      const cb = row.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = false;
     }
+  });
 
-    function toNum(value, fallback) {
-      var n = parseFloat(value);
-      return isFinite(n) ? n : (fallback === undefined ? 0 : fallback);
+  $('result-count').textContent = total ? `Showing ${shown} of ${total} items` : '';
+  updateBulkBar();
+  syncSelectAllCheckbox();
+}
+
+function resetStockFilters() {
+  ['filter-search', 'filter-metal', 'filter-status'].forEach(id => $(id).value = '');
+  applyFilters();
+}
+
+function sortBy(col) {
+  if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  else { sortColumn = col; sortDirection = 'asc'; }
+  renderStock();
+}
+
+/* ── Selection & bulk actions ── */
+function toggleSelect(id, row) {
+  selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  if (row) row.classList.toggle('selected', selectedIds.has(id));
+  updateBulkBar();
+  syncSelectAllCheckbox();
+}
+
+function toggleSelectAll() {
+  const on = $('select-all').checked;
+  visibleRows().forEach(r => {
+    on ? selectedIds.add(r.dataset.id) : selectedIds.delete(r.dataset.id);
+    r.classList.toggle('selected', on);
+    r.querySelector('input[type="checkbox"]').checked = on;
+  });
+  updateBulkBar();
+  syncSelectAllCheckbox();
+}
+
+function syncSelectAllCheckbox() {
+  const all = $('select-all'), rows = visibleRows();
+  if (!rows.length) { all.checked = false; all.indeterminate = false; return; }
+  const n = rows.filter(r => selectedIds.has(r.dataset.id)).length;
+  all.checked = n === rows.length;
+  all.indeterminate = n > 0 && n < rows.length;
+}
+
+function updateBulkBar() {
+  $('bulk-count').innerText = selectedIds.size;
+  $('bulk-bar').classList.toggle('visible', selectedIds.size > 0);
+}
+
+function clearSelection() { selectedIds.clear(); renderStock(); }
+
+function bulkSetStatus(status) {
+  if (!selectedIds.size) return;
+  updateStock(stock => stock.forEach(it => { if (selectedIds.has(it.id)) it.status = status; }));
+  selectedIds.clear();
+  refresh();
+  showAlert(`Marked as ${status}.`, 'success');
+}
+
+function bulkDelete() {
+  const n = selectedIds.size;
+  if (!n) return;
+  confirmThen(`Delete ${n} item${n === 1 ? '' : 's'}?`, 'This cannot be undone.', () => {
+    const ids = new Set(selectedIds);
+    updateStock(stock => { for (let i = stock.length - 1; i >= 0; i--) if (ids.has(stock[i].id)) stock.splice(i, 1); });
+    selectedIds.clear();
+    refresh();
+    showAlert(`Deleted ${n} item${n === 1 ? '' : 's'}.`, 'success');
+  });
+}
+
+/* ── Edit ── */
+window.editStock = function (id) {
+  const item = getItems().find(i => i.id === id);
+  if (!item) return showAlert('Item not found.', 'error');
+  $('edit-id').value = id;
+  $('edit-name').value = item.item || '';
+  $('edit-metal').value = item.metal || 'Gold';
+  onEditMetalChange();
+  $('edit-carat').value = (item.carat && item.carat !== '-') ? item.carat : '';
+  $('edit-qty').value = qtyOf(item);
+  const w = toNum(item.weight), p = toNum(item.price);
+  $('edit-weight').value = item.weight || '';
+  $('edit-price').value = item.price || '';
+  $('edit-rate').value = (w > 0 && p > 0) ? fmtRate(p / w) : '';
+  $('edit-status').value = item.status || 'In Stock';
+  $('edit-modal').classList.add('active');
+  $('edit-name').focus();
+};
+
+function onEditMetalChange() {
+  $('edit-carat-list').innerHTML = CARATS[$('edit-metal').value].map(c => `<option value="${c}"></option>`).join('');
+}
+
+function onEditRateInput() {
+  const w = toNum($('edit-weight').value), r = toNum($('edit-rate').value);
+  if (w > 0 && r > 0) $('edit-price').value = Math.round(w * r);
+}
+function onEditWeightInput() {
+  const w = toNum($('edit-weight').value), r = toNum($('edit-rate').value), p = toNum($('edit-price').value);
+  if (w > 0) {
+    if (r > 0) $('edit-price').value = Math.round(w * r);
+    else if (p > 0) $('edit-rate').value = fmtRate(p / w);
+  }
+}
+function onEditPriceInput() {
+  const w = toNum($('edit-weight').value), p = toNum($('edit-price').value);
+  if (w > 0 && p > 0) $('edit-rate').value = fmtRate(p / w);
+}
+
+window.closeEditModal = () => $('edit-modal').classList.remove('active');
+
+window.saveStockEdit = function () {
+  const id = $('edit-id').value;
+  const name = $('edit-name').value.trim();
+  const qty = parseInt($('edit-qty').value, 10);
+  const weight = parseFloat($('edit-weight').value);
+  const price = parseFloat($('edit-price').value);
+  if (!id) return showAlert('Missing record ID.', 'error');
+  if (!name) return showAlert('Item name is required.', 'error');
+  if (isNaN(qty) || qty < 1) return showAlert('Quantity must be at least 1.', 'error');
+  if (isNaN(weight) || weight <= 0) return showAlert('Weight must be greater than zero.', 'error');
+  if (isNaN(price) || price <= 0) return showAlert('Price must be greater than zero.', 'error');
+
+  try {
+    let found = false;
+    updateStock(stock => {
+      const it = stock.find(i => i.id === id);
+      if (!it) return;
+      found = true;
+      it.item = name;
+      it.metal = $('edit-metal').value;
+      it.carat = $('edit-carat').value.trim() || '-';
+      it.qty = qty;
+      it.weight = String(weight);
+      it.price = String(price);
+      it.status = $('edit-status').value;
+    });
+    if (!found) return showAlert('Item not found.', 'error');
+  } catch (err) { return showAlert('Update failed: ' + (err.message || err), 'error'); }
+
+  closeEditModal();
+  refresh();
+  showAlert('Item updated successfully.', 'success');
+};
+
+/* ── View ── */
+window.viewStock = function (id) {
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+  const metal = item.metal || 'Gold';
+  const carat = item.carat && item.carat !== '-' ? item.carat : '—';
+  const qty = qtyOf(item);
+  const wt = toNum(item.weight), price = toNum(item.price), rate = rateOf(item);
+  const status = item.status || 'In Stock';
+  const sid = escapeHtml(id);
+
+  $('view-content').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-header-icon"><i class="fas fa-gem"></i></div>
+      <div>
+        <h3 class="detail-header-name">${escapeHtml(item.item)}</h3>
+        <div class="detail-header-sub"><span class="badge ${metal === 'Gold' ? 'badge-gold' : 'badge-silver'}">${escapeHtml(metal)}</span> · ${escapeHtml(carat)}</div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-item-label">Status</div><div class="detail-item-value"><span class="badge ${statusClass(status)}">${escapeHtml(status)}</span></div></div>
+      <div class="detail-item"><div class="detail-item-label">Qty (pcs)</div><div class="detail-item-value">${qty}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Weight / pc</div><div class="detail-item-value">${wt.toFixed(3)} g</div></div>
+      <div class="detail-item"><div class="detail-item-label">Total Weight</div><div class="detail-item-value">${(wt * qty).toFixed(3)} g</div></div>
+      <div class="detail-item"><div class="detail-item-label">Price / pc</div><div class="detail-item-value">${fmt(price)}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Total Price</div><div class="detail-item-value" style="color:var(--gold);">${fmt(price * qty)}</div></div>
+      <div class="detail-item" style="grid-column:span 2;"><div class="detail-item-label">Rate / g</div><div class="detail-item-value">${rate > 0 ? fmt(rate) : '—'}</div></div>
+    </div>`;
+
+  $('view-actions').innerHTML = `
+    <button class="primary" onclick="closeViewModal();editStock('${sid}')"><i class="fas fa-edit"></i> Edit</button>
+    <button onclick="closeViewModal();toggleSold('${sid}')"><i class="fas fa-${status === 'Sold' ? 'undo' : 'check'}"></i> ${status === 'Sold' ? 'Mark In Stock' : 'Mark Sold'}</button>
+    <button onclick="closeViewModal();duplicateStock('${sid}')"><i class="fas fa-copy"></i> Duplicate</button>
+    <button class="danger" onclick="closeViewModal();deleteStock('${sid}')"><i class="fas fa-trash"></i> Delete</button>`;
+
+  $('view-modal').classList.add('active');
+};
+
+window.closeViewModal = () => $('view-modal').classList.remove('active');
+
+/* ── Toggle sold / duplicate / delete ── */
+window.toggleSold = function (id) {
+  let newStatus = null;
+  updateStock(stock => {
+    const it = stock.find(i => i.id === id);
+    if (it) { it.status = it.status === 'Sold' ? 'In Stock' : 'Sold'; newStatus = it.status; }
+  });
+  if (!newStatus) return;
+  refresh();
+  showAlert(`Marked as ${newStatus}.`, 'success');
+};
+
+window.duplicateStock = function (id) {
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+  const qty = qtyOf(item);
+  let created;
+  try {
+    created = addStockRecord({
+      item: item.item + ' (Copy)', metal: item.metal || 'Gold', carat: item.carat || '-',
+      qty: qty, weight: item.weight, price: item.price, status: 'In Stock'
+    });
+  } catch (err) { return showAlert('Duplicate failed: ' + (err.message || err), 'error'); }
+  if (!created) return showAlert('Duplicate could not be saved.', 'error');
+  refresh();
+  showAlert('Item duplicated.', 'success');
+};
+
+window.deleteStock = function (id) {
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+  confirmThen('Delete Item?', `Permanently delete "${item.item}"? This cannot be undone.`, () => {
+    try { updateStock(stock => { const i = stock.findIndex(s => s.id === id); if (i > -1) stock.splice(i, 1); }); }
+    catch (err) { return showAlert('Delete failed: ' + (err.message || err), 'error'); }
+    selectedIds.delete(id);
+    refresh();
+    showAlert('Item deleted.', 'success');
+  });
+};
+
+/* ── Export CSV (visible rows) ── */
+window.exportCSV = function () {
+  const ids = new Set(visibleRows().map(r => r.dataset.id));
+  const items = getItems().filter(it => ids.has(it.id));
+  if (!items.length) return showAlert('No items to export.', 'info');
+
+  const rows = [['ID', 'Name', 'Metal', 'Carat', 'Qty', 'Weight/pc (g)', 'Total Wt (g)', 'Rate/g', 'Price/pc (₹)', 'Total Price (₹)', 'Status']];
+  items.forEach(it => {
+    const qty = qtyOf(it);
+    const w = toNum(it.weight), p = toNum(it.price);
+    rows.push([it.id || '', it.item || '', it.metal || 'Gold', it.carat || '-', qty,
+      w.toFixed(3), (w * qty).toFixed(3), w > 0 ? (p / w).toFixed(2) : '0',
+      p.toFixed(2), (p * qty).toFixed(2), it.status || 'In Stock']);
+  });
+
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SwarnJyoti_Stock_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showAlert(`Exported ${items.length} item${items.length === 1 ? '' : 's'} to CSV.`, 'success');
+};
+
+/* ── Print (visible rows, current sort) ── */
+window.printStockList = function () {
+  const rows = visibleRows();
+  if (!rows.length) return showAlert('Nothing to print (no items match filters).', 'info');
+
+  const byId = {};
+  getItems().forEach(it => byId[it.id] = it);
+  let totalValue = 0, totalWeight = 0, totalPieces = 0;
+
+  $('print-table').querySelector('tbody').innerHTML = rows.map((row, i) => {
+    const it = byId[row.dataset.id];
+    if (!it) return '';
+    const qty = qtyOf(it);
+    const w = toNum(it.weight), p = toNum(it.price);
+    const totalW = w * qty, totalP = p * qty;
+    const rate = w > 0 ? p / w : 0;
+    totalValue += totalP; totalWeight += totalW; totalPieces += qty;
+    return `<tr><td>${i + 1}</td><td>${escapeHtml(it.item)}</td><td class="num">${qty}</td>
+      <td>${escapeHtml(it.metal || 'Gold')}</td><td>${escapeHtml(it.carat || '-')}</td>
+      <td class="num">${totalW.toFixed(3)} g</td><td class="num">${rate > 0 ? fmt(rate) : '—'}</td>
+      <td class="num">${fmt(totalP)}</td><td>${escapeHtml(it.status || 'In Stock')}</td></tr>`;
+  }).join('');
+
+  $('print-totals').innerText = `Total: ${totalPieces} pcs across ${rows.length} item${rows.length === 1 ? '' : 's'} · ${totalWeight.toFixed(3)} g · ${fmt(totalValue)}`;
+  const now = new Date();
+  $('print-date').innerText = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  $('print-area').style.display = 'block';
+  setTimeout(() => window.print(), 100);
+};
+
+window.addEventListener('afterprint', () => { $('print-area').style.display = 'none'; });
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', () => {
+  ensureIds();
+  onAddMetalChange();       // builds carats AND fills rate from settings
+
+  // Add form
+  $('btn-save-stock').addEventListener('click', addStock);
+  $('btn-clear-form').addEventListener('click', clearAddForm);
+  $('stk-metal').addEventListener('change', onAddMetalChange);
+  $('stk-carat').addEventListener('change', fillAddRate);
+  $('stk-weight').addEventListener('input', onAddWeightInput);
+  $('stk-rate').addEventListener('input', onAddRateInput);
+  $('stk-price').addEventListener('input', onAddPriceInput);
+  $('stk-qty').addEventListener('input', updateQtyPreview);
+  document.querySelectorAll('.add-stock-form input').forEach(inp =>
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addStock(); } }));
+
+  // Edit modal sync
+  $('edit-metal').addEventListener('change', onEditMetalChange);
+  $('edit-weight').addEventListener('input', onEditWeightInput);
+  $('edit-rate').addEventListener('input', onEditRateInput);
+  $('edit-price').addEventListener('input', onEditPriceInput);
+
+  // Filters
+  let timer;
+  $('filter-search').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(applyFilters, 150); });
+  ['filter-metal', 'filter-status'].forEach(id => $(id).addEventListener('change', applyFilters));
+  $('btn-reset').addEventListener('click', resetStockFilters);
+  $('btn-csv').addEventListener('click', exportCSV);
+  $('btn-print').addEventListener('click', printStockList);
+
+  // Table: sort + row actions
+  document.querySelectorAll('#stock-table th[data-sort]').forEach(th =>
+    th.addEventListener('click', () => sortBy(th.dataset.sort)));
+  $('select-all').addEventListener('change', toggleSelectAll);
+  $('stock-body').addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const row = el.closest('tr[data-id]');
+    if (!row) return;
+    const id = row.dataset.id;
+    switch (el.dataset.act) {
+      case 'select': toggleSelect(id, row); break;
+      case 'view':   viewStock(id); break;
+      case 'edit':   editStock(id); break;
+      case 'toggle': toggleSold(id); break;
+      case 'dup':    duplicateStock(id); break;
+      case 'delete': deleteStock(id); break;
     }
-
-    function fmt(n) {
-      return '₹' + Math.round(toNum(n)).toLocaleString('en-IN');
-    }
-
-    function newId() {
-      return 'STK-' + Date.now().toString(36).toUpperCase() + '-' +
-             Math.random().toString(36).slice(2, 6).toUpperCase();
-    }
-
-    function statusBadgeClass(status) {
-      if (status === 'Sold') return 'badge-status-sold';
-      if (status === 'Reserved') return 'badge-status-reserved';
-      return 'badge-status-instock';
-    }
-
-    function $(id) { return document.getElementById(id); }
-
-    /* ═══════════════════════════════════════════════════════
-       NOTIFICATIONS  (use global showAlert/showConfirm from
-       js/app.js when present, otherwise use safe fallbacks)
-       ═══════════════════════════════════════════════════════ */
-    function notify(message, type) {
-      if (typeof window.showAlert === 'function') {
-        try { window.showAlert(message, type || 'info'); return; } catch (e) { /* fall through */ }
-      }
-      var toast = document.createElement('div');
-      toast.textContent = message;
-      toast.style.cssText =
-        'position:fixed;right:24px;bottom:24px;z-index:99999;padding:12px 18px;border-radius:8px;' +
-        'color:#fff;font:600 14px/1.4 system-ui,sans-serif;max-width:320px;' +
-        'box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .2s ease;background:#102440;';
-      if (type === 'error') toast.style.background = '#DC3545';
-      else if (type === 'success') toast.style.background = '#198754';
-      document.body.appendChild(toast);
-      requestAnimationFrame(function () { toast.style.opacity = '1'; });
-      setTimeout(function () {
-        toast.style.opacity = '0';
-        setTimeout(function () {
-          if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 250);
-      }, 2600);
-    }
-
-    function confirmAction(title, message, okLabel, cancelLabel, onConfirm) {
-      if (typeof window.showConfirm === 'function') {
-        try { window.showConfirm(title, message, okLabel, cancelLabel, onConfirm); return; } catch (e) { /* fall through */ }
-      }
-      if (window.confirm(title + '\n\n' + message)) onConfirm();
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       DATABASE ACCESS  (js/db.js — DB.getData / DB.saveData /
-       DB.addStock). No other storage mechanism is used.
-       ═══════════════════════════════════════════════════════ */
-    function getDB() {
-      /* `DB` may be declared with const/let in db.js, so it is
-         referenced directly, guarded by typeof. */
-      if (typeof DB === 'undefined' || !DB || typeof DB.getData !== 'function') {
-        throw new Error('Database module unavailable. Make sure js/db.js is loaded before this script.');
-      }
-      return DB;
-    }
-
-    function loadData() {
-      var data = getDB().getData();
-      if (!data || typeof data !== 'object') data = {};
-      if (!Array.isArray(data.stock)) data.stock = [];
-      return data;
-    }
-
-    function persist(data) {
-      getDB().saveData(data);
-    }
-
-    function ensureIds() {
-      var data = loadData();
-      var changed = false;
-      data.stock.forEach(function (item) {
-        if (!item.id) { item.id = newId(); changed = true; }
-        if (!item.status) { item.status = 'In Stock'; changed = true; }
-      });
-      if (changed) persist(data);
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       FORM ERROR HELPERS
-       ═══════════════════════════════════════════════════════ */
-    function clearError(id) {
-      var field = $(id);
-      if (field) field.classList.remove('error');
-      var err = $('err-' + id);
-      if (err) err.classList.remove('visible');
-    }
-
-    function showError(id, message) {
-      var field = $(id);
-      if (field) field.classList.add('error');
-      var err = $('err-' + id);
-      if (err) { err.textContent = message; err.classList.add('visible'); }
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       SUMMARY CARDS
-       ═══════════════════════════════════════════════════════ */
-    function renderSummary() {
-      var items;
-      try { items = loadData().stock; }
-      catch (e) { notify(e.message, 'error'); return; }
-
-      var goldWeight = 0, goldCount = 0;
-      var silverWeight = 0, silverCount = 0;
-      var totalValue = 0, totalWeight = 0;
-      var inStockCount = 0, soldCount = 0;
-
-      items.forEach(function (item) {
-        var weight = toNum(item.weight);
-        var price  = toNum(item.price);
-
-        totalValue  += price;
-        totalWeight += weight;
-
-        if (item.metal === 'Silver') { silverWeight += weight; silverCount++; }
-        else                         { goldWeight   += weight; goldCount++;   }
-
-        if (item.status === 'Sold') soldCount++; else inStockCount++;
-      });
-
-      $('sum-total-items').textContent = String(items.length);
-      $('sum-items-sub').textContent = inStockCount + ' in stock · ' + soldCount + ' sold';
-
-      $('sum-gold').textContent = goldWeight.toFixed(3) + ' g';
-      $('sum-gold-sub').textContent = goldCount + ' item' + (goldCount === 1 ? '' : 's');
-
-      $('sum-silver').textContent = silverWeight.toFixed(3) + ' g';
-      $('sum-silver-sub').textContent = silverCount + ' item' + (silverCount === 1 ? '' : 's');
-
-      $('sum-value').textContent = fmt(totalValue);
-
-      var avgRate = totalWeight > 0 ? (totalValue / totalWeight) : 0;
-      $('sum-value-sub').textContent = 'Avg ' + fmt(avgRate) + '/g';
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       TABLE RENDERING
-       ═══════════════════════════════════════════════════════ */
-    function getSortValue(item, column) {
-      switch (column) {
-        case 'item':   return String(item.item || '').toLowerCase();
-        case 'metal':  return String(item.metal || 'Gold').toLowerCase();
-        case 'carat':  return String(item.carat || '-').toLowerCase();
-        case 'cat':    return String(item.cat || 'General').toLowerCase();
-        case 'weight': return toNum(item.weight);
-        case 'price':  return toNum(item.price);
-        case 'status': return String(item.status || 'In Stock').toLowerCase();
-        default:       return 0;
-      }
-    }
-
-    function sortStock(column) {
-      if (sortColumn === column) {
-        sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
-      } else {
-        sortColumn = column;
-        sortDirection = 'asc';
-      }
-      renderStock();
-    }
-
-    function updateSortIndicators() {
-      var headers = document.querySelectorAll('#stock-table th[data-sort]');
-      Array.prototype.forEach.call(headers, function (th) {
-        var active = (th.getAttribute('data-sort') === sortColumn);
-        th.classList.toggle('sort-active', active);
-        var ind = th.querySelector('.sort-ind');
-        if (ind) ind.textContent = active ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅';
-      });
-    }
-
-    function rebuildCategoryOptions(items) {
-      var select = $('filter-cat');
-      if (!select) return;
-
-      var seen = {};
-      var categories = [];
-      items.forEach(function (item) {
-        var cat = item.cat || 'General';
-        if (!seen[cat]) { seen[cat] = true; categories.push(cat); }
-      });
-      categories.sort();
-
-      var current = select.value;
-
-      var html = '<option value="">All Categories</option>';
-      categories.forEach(function (cat) {
-        html += '<option value="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</option>';
-      });
-      select.innerHTML = html;
-
-      if (current && seen[current]) select.value = current;
-      else select.value = '';
-    }
-
-    function menuHtml(id, status) {
-      var safeId = escapeHtml(id);
-      var nextLabel = (status === 'Sold') ? 'In Stock' : 'Sold';
-      return '' +
-        '<div class="dropdown">' +
-          '<button type="button" class="btn-more" data-action="menu" data-id="' + safeId + '">' +
-            '<i class="fas fa-ellipsis-v"></i>' +
-          '</button>' +
-          '<div class="dropdown-menu">' +
-            '<a data-action="view" data-id="' + safeId + '"><i class="fas fa-eye"></i> View Details</a>' +
-            '<a data-action="edit" data-id="' + safeId + '"><i class="fas fa-edit"></i> Edit Item</a>' +
-            '<a data-action="duplicate" data-id="' + safeId + '"><i class="fas fa-copy"></i> Duplicate</a>' +
-            '<a data-action="toggle-sold" data-id="' + safeId + '"><i class="fas fa-check-circle"></i> Mark ' + nextLabel + '</a>' +
-            '<div class="dropdown-divider"></div>' +
-            '<a class="text-danger" data-action="delete" data-id="' + safeId + '"><i class="fas fa-trash"></i> Delete</a>' +
-          '</div>' +
-        '</div>';
-    }
-
-    function rowHtml(item) {
-      var id      = String(item.id || '');
-      var metal   = item.metal || 'Gold';
-      var carat   = (item.carat && item.carat !== '-') ? item.carat : '—';
-      var cat     = item.cat || 'General';
-      var weight  = toNum(item.weight);
-      var price   = toNum(item.price);
-      var status  = item.status || 'In Stock';
-      var checked = selectedIds.has(id);
-
-      var metalClass  = (metal === 'Silver') ? 'badge-metal-silver' : 'badge-metal-gold';
-      var statusClass = statusBadgeClass(status);
-      var haystack    = [item.item || '', metal, carat, cat, status].join(' ');
-
-      return '' +
-        '<tr data-id="' + escapeHtml(id) + '"' +
-            ' data-metal="' + escapeHtml(metal) + '"' +
-            ' data-cat="' + escapeHtml(cat) + '"' +
-            ' data-status="' + escapeHtml(status) + '"' +
-            ' data-search="' + escapeHtml(haystack) + '"' +
-            (checked ? ' class="selected"' : '') + '>' +
-          '<td class="col-cb">' +
-            '<input type="checkbox" data-id="' + escapeHtml(id) + '"' + (checked ? ' checked' : '') + ' />' +
-          '</td>' +
-          '<td class="item-name" data-action="view" data-id="' + escapeHtml(id) + '">' +
-            escapeHtml(item.item || 'Untitled') +
-          '</td>' +
-          '<td><span class="badge ' + metalClass + '">' + escapeHtml(metal) + '</span></td>' +
-          '<td>' + escapeHtml(carat) + '</td>' +
-          '<td>' + escapeHtml(cat) + '</td>' +
-          '<td class="col-num">' + weight.toFixed(3) + ' g</td>' +
-          '<td class="col-num" style="font-weight:600;">' + fmt(price) + '</td>' +
-          '<td><span class="badge ' + statusClass + '">' + escapeHtml(status) + '</span></td>' +
-          '<td class="col-actions">' + menuHtml(id, status) + '</td>' +
-        '</tr>';
-    }
-
-    function messageRowHtml() {
-      return '' +
-        '<tr id="msg-row" style="display:none;">' +
-          '<td colspan="9" class="empty-cell"><div class="empty-state" id="msg-content"></div></td>' +
-        '</tr>';
-    }
-
-    function emptyStateHtml() {
-      return '' +
-        '<i class="fas fa-box-open"></i>' +
-        '<h3>No Stock Items Yet</h3>' +
-        '<p>Start by adding your first inventory item.</p>' +
-        '<button class="btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Add First Item</button>';
-    }
-
-    function noResultsHtml() {
-      return '' +
-        '<i class="fas fa-search"></i>' +
-        '<h3>No matching items found</h3>' +
-        '<p>Try adjusting your search or filters.</p>' +
-        '<button class="btn-outline-small" onclick="resetStockFilters()" style="margin:0 auto;">' +
-          '<i class="fas fa-undo"></i> Clear Filters</button>';
-    }
-
-    function renderStock() {
-      var items;
-      try { items = loadData().stock; }
-      catch (e) { notify(e.message, 'error'); return; }
-
-      var tbody = $('stock-body');
-      if (!tbody) return;
-
-      rebuildCategoryOptions(items);
-
-      var display = items.slice();
-      if (sortColumn) {
-        display.sort(function (a, b) {
-          var va = getSortValue(a, sortColumn);
-          var vb = getSortValue(b, sortColumn);
-          if (va < vb) return sortDirection === 'asc' ? -1 : 1;
-          if (va > vb) return sortDirection === 'asc' ? 1 : -1;
-          return 0;
-        });
-      } else {
-        display.reverse(); /* newest first */
-      }
-
-      updateSortIndicators();
-
-      var html = '';
-      display.forEach(function (item) { html += rowHtml(item); });
-      html += messageRowHtml();
-
-      tbody.innerHTML = html;
-
-      applyFilters();
-      updateBulkBar();
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       FILTERS
-       ═══════════════════════════════════════════════════════ */
-    function applyFilters() {
-      var searchInput = $('search-input');
-      var metalSelect = $('filter-metal');
-      var catSelect   = $('filter-cat');
-      var statSelect  = $('filter-status');
-
-      var query  = searchInput ? searchInput.value.trim().toLowerCase() : '';
-      var metal  = metalSelect ? metalSelect.value : '';
-      var cat    = catSelect ? catSelect.value : '';
-      var status = statSelect ? statSelect.value : '';
-
-      var rows = document.querySelectorAll('#stock-body tr[data-id]');
-      var visibleCount = 0;
-
-      Array.prototype.forEach.call(rows, function (row) {
-        var show = true;
-
-        if (query) {
-          var haystack = (row.getAttribute('data-search') || '').toLowerCase();
-          if (haystack.indexOf(query) === -1) show = false;
-        }
-        if (metal && row.getAttribute('data-metal') !== metal) show = false;
-        if (cat && row.getAttribute('data-cat') !== cat) show = false;
-        if (status && row.getAttribute('data-status') !== status) show = false;
-
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-      });
-
-      var resultsEl = $('results-count');
-      if (resultsEl) resultsEl.innerHTML = 'Showing <strong>' + visibleCount + '</strong> results';
-
-      var msgRow = $('msg-row');
-      var msgContent = $('msg-content');
-      if (msgRow && msgContent) {
-        if (rows.length === 0) {
-          msgContent.innerHTML = emptyStateHtml();
-          msgRow.style.display = '';
-        } else if (visibleCount === 0) {
-          msgContent.innerHTML = noResultsHtml();
-          msgRow.style.display = '';
-        } else {
-          msgRow.style.display = 'none';
-          msgContent.innerHTML = '';
-        }
-      }
-
-      syncSelectAllCheckbox();
-    }
-
-    function resetStockFilters() {
-      if ($('search-input'))  $('search-input').value = '';
-      if ($('filter-metal'))  $('filter-metal').value = '';
-      if ($('filter-cat'))    $('filter-cat').value = '';
-      if ($('filter-status')) $('filter-status').value = '';
-      applyFilters();
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       SELECTION & BULK ACTIONS
-       ═══════════════════════════════════════════════════════ */
-    function visibleRows() {
-      return Array.prototype.slice
-        .call(document.querySelectorAll('#stock-body tr[data-id]'))
-        .filter(function (row) { return row.style.display !== 'none'; });
-    }
-
-    function toggleSelect(id) {
-      if (selectedIds.has(id)) selectedIds.delete(id);
-      else selectedIds.add(id);
-
-      var row = document.querySelector('#stock-body tr[data-id="' + id + '"]');
-      if (row) {
-        row.classList.toggle('selected', selectedIds.has(id));
-        var cb = row.querySelector('input[type="checkbox"]');
-        if (cb) cb.checked = selectedIds.has(id);
-      }
-
-      updateBulkBar();
-      syncSelectAllCheckbox();
-    }
-
-    function toggleSelectAll() {
-      var allCb = $('select-all');
-      if (!allCb) return;
-
-      var rows = visibleRows();
-      rows.forEach(function (row) {
-        var id = row.getAttribute('data-id');
-        if (allCb.checked) selectedIds.add(id);
-        else selectedIds.delete(id);
-
-        row.classList.toggle('selected', allCb.checked);
-        var cb = row.querySelector('input[type="checkbox"]');
-        if (cb) cb.checked = allCb.checked;
-      });
-
-      updateBulkBar();
-    }
-
-    function syncSelectAllCheckbox() {
-      var allCb = $('select-all');
-      if (!allCb) return;
-
-      var rows = visibleRows();
-      if (rows.length === 0) {
-        allCb.checked = false;
-        allCb.indeterminate = false;
-        return;
-      }
-
-      var selectedVisible = rows.filter(function (row) {
-        return selectedIds.has(row.getAttribute('data-id'));
-      }).length;
-
-      allCb.checked = (selectedVisible === rows.length);
-      allCb.indeterminate = (selectedVisible > 0 && selectedVisible < rows.length);
-    }
-
-    function updateBulkBar() {
-      var bar = $('bulk-bar');
-      var count = $('bulk-count');
-      if (count) count.textContent = String(selectedIds.size);
-      if (!bar) return;
-      if (selectedIds.size > 0) bar.classList.add('visible');
-      else bar.classList.remove('visible');
-    }
-
-    function clearSelection() {
-      selectedIds.clear();
-      renderStock();
-    }
-
-    function bulkMarkSold() {
-      if (selectedIds.size === 0) return;
-      try {
-        var data = loadData();
-        data.stock.forEach(function (item) {
-          if (selectedIds.has(item.id)) item.status = 'Sold';
-        });
-        persist(data);
-      } catch (e) {
-        notify('Update failed: ' + e.message, 'error');
-        return;
-      }
-      selectedIds.clear();
-      renderSummary();
-      renderStock();
-      notify('Marked as Sold.', 'success');
-    }
-
-    function bulkMarkInStock() {
-      if (selectedIds.size === 0) return;
-      try {
-        var data = loadData();
-        data.stock.forEach(function (item) {
-          if (selectedIds.has(item.id)) item.status = 'In Stock';
-        });
-        persist(data);
-      } catch (e) {
-        notify('Update failed: ' + e.message, 'error');
-        return;
-      }
-      selectedIds.clear();
-      renderSummary();
-      renderStock();
-      notify('Marked as In Stock.', 'success');
-    }
-
-    function bulkDelete() {
-      if (selectedIds.size === 0) return;
-      var count = selectedIds.size;
-
-      confirmAction(
-        'Delete ' + count + ' item' + (count === 1 ? '' : 's') + '?',
-        'This cannot be undone.',
-        'Yes, Delete',
-        'Cancel',
-        function () {
-          try {
-            var data = loadData();
-            data.stock = data.stock.filter(function (item) {
-              return !selectedIds.has(item.id);
-            });
-            persist(data);
-          } catch (e) {
-            notify('Delete failed: ' + e.message, 'error');
-            return;
-          }
-          selectedIds.clear();
-          renderSummary();
-          renderStock();
-          notify('Deleted ' + count + ' item' + (count === 1 ? '' : 's') + '.', 'success');
-        }
-      );
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ADD MODAL
-       ═══════════════════════════════════════════════════════ */
-    function openAddModal() {
-      ['add-name', 'add-cat', 'add-weight', 'add-price'].forEach(function (id) {
-        var el = $(id);
-        if (el) el.value = '';
-        clearError(id);
-      });
-
-      if ($('add-metal')) $('add-metal').value = 'Gold';
-      onAddMetalChange();
-      if ($('add-status')) $('add-status').value = 'In Stock';
-
-      $('add-modal').classList.add('active');
-      setTimeout(function () {
-        var nameField = $('add-name');
-        if (nameField) nameField.focus();
-      }, 100);
-    }
-
-    function closeAddModal() {
-      $('add-modal').classList.remove('active');
-    }
-
-    function onAddMetalChange() {
-      var metalSelect = $('add-metal');
-      var caratSelect = $('add-carat');
-      if (!metalSelect || !caratSelect) return;
-
-      var isGold = (metalSelect.value !== 'Silver');
-      var options = isGold ? GOLD_CARATS : SILVER_CARATS;
-      var defaultIndex = isGold ? 1 : 0;
-
-      var html = '';
-      options.forEach(function (value, index) {
-        html += '<option value="' + escapeHtml(value) + '"' +
-                (index === defaultIndex ? ' selected' : '') + '>' +
-                escapeHtml(value) + '</option>';
-      });
-      caratSelect.innerHTML = html;
-    }
-
-    function saveNewItem() {
-      var name   = ($('add-name').value || '').trim();
-      var metal  = $('add-metal').value;
-      var carat  = $('add-carat').value;
-      var cat    = ($('add-cat').value || '').trim();
-      var weight = parseFloat($('add-weight').value);
-      var price  = parseFloat($('add-price').value);
-      var status = $('add-status').value;
-
-      var valid = true;
-      if (!name) { showError('add-name', 'Item name is required'); valid = false; }
-      if (isNaN(weight) || weight <= 0) { showError('add-weight', 'Valid weight is required'); valid = false; }
-      if (isNaN(price) || price <= 0) { showError('add-price', 'Valid price is required'); valid = false; }
-      if (!valid) return;
-
-      var btn = $('btn-save-add');
-      btn.disabled = true;
-      btn.innerHTML = 'Saving…';
-
-      try {
-        var record = {
-          item:   name,
-          metal:  metal,
-          carat:  carat || '-',
-          cat:    cat || 'General',
-          weight: String(weight),
-          price:  String(price),
-          status: status
-        };
-
-        var db = getDB();
-        if (typeof db.addStock === 'function') {
-          db.addStock(record);
-        } else {
-          var data = loadData();
-          record.id = newId();
-          data.stock.push(record);
-          persist(data);
-        }
-      } catch (err) {
-        notify('Failed to add item: ' + (err.message || err), 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Save Item';
-        return;
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save"></i> Save Item';
-
-      closeAddModal();
-      renderSummary();
-      renderStock();
-      notify('Item added successfully.', 'success');
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       EDIT MODAL
-       ═══════════════════════════════════════════════════════ */
-    function editStock(id) {
-      var item;
-      try {
-        item = loadData().stock.filter(function (row) { return row.id === id; })[0];
-      } catch (e) {
-        notify(e.message, 'error');
-        return;
-      }
-      if (!item) { notify('Item not found.', 'error'); return; }
-
-      $('edit-id').value      = id;
-      $('edit-name').value    = item.item || '';
-      $('edit-metal').value   = item.metal || 'Gold';
-      $('edit-carat').value   = (item.carat && item.carat !== '-') ? item.carat : '';
-      $('edit-cat').value     = (item.cat && item.cat !== 'General') ? item.cat : '';
-      $('edit-weight').value  = item.weight || '';
-      $('edit-price').value   = item.price || '';
-      $('edit-status').value  = item.status || 'In Stock';
-
-      ['edit-name', 'edit-weight', 'edit-price'].forEach(clearError);
-
-      $('edit-modal').classList.add('active');
-      setTimeout(function () { $('edit-name').focus(); }, 100);
-    }
-
-    function closeEditModal() {
-      $('edit-modal').classList.remove('active');
-    }
-
-    function saveStockEdit() {
-      var id     = $('edit-id').value;
-      var name   = ($('edit-name').value || '').trim();
-      var metal  = $('edit-metal').value;
-      var carat  = ($('edit-carat').value || '').trim();
-      var cat    = ($('edit-cat').value || '').trim();
-      var weight = parseFloat($('edit-weight').value);
-      var price  = parseFloat($('edit-price').value);
-      var status = $('edit-status').value;
-
-      var valid = true;
-      if (!name) { showError('edit-name', 'Item name is required'); valid = false; }
-      if (isNaN(weight) || weight <= 0) { showError('edit-weight', 'Valid weight is required'); valid = false; }
-      if (isNaN(price) || price <= 0) { showError('edit-price', 'Valid price is required'); valid = false; }
-      if (!valid) return;
-
-      var btn = $('btn-save-edit');
-      btn.disabled = true;
-      btn.innerHTML = 'Saving…';
-
-      try {
-        var data = loadData();
-        var item = data.stock.filter(function (row) { return row.id === id; })[0];
-        if (!item) throw new Error('Item not found');
-
-        item.item   = name;
-        item.metal  = metal;
-        item.carat  = carat || '-';
-        item.cat    = cat || 'General';
-        item.weight = String(weight);
-        item.price  = String(price);
-        item.status = status;
-
-        persist(data);
-      } catch (err) {
-        notify('Update failed: ' + (err.message || err), 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-        return;
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-
-      closeEditModal();
-      renderSummary();
-      renderStock();
-      notify('Item updated successfully.', 'success');
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       VIEW MODAL
-       ═══════════════════════════════════════════════════════ */
-    function viewStock(id) {
-      var item;
-      try {
-        item = loadData().stock.filter(function (row) { return row.id === id; })[0];
-      } catch (e) {
-        notify(e.message, 'error');
-        return;
-      }
-      if (!item) { notify('Item not found.', 'error'); return; }
-
-      currentViewId = id;
-
-      var metal   = item.metal || 'Gold';
-      var carat   = (item.carat && item.carat !== '-') ? item.carat : '—';
-      var cat     = item.cat || 'General';
-      var weight  = toNum(item.weight);
-      var price   = toNum(item.price);
-      var status  = item.status || 'In Stock';
-
-      var metalClass  = (metal === 'Silver') ? 'badge-metal-silver' : 'badge-metal-gold';
-      var statusClass = statusBadgeClass(status);
-
-      $('view-content').innerHTML = '' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;">' +
-          '<div style="width:48px;height:48px;border-radius:10px;background:#FFF9EE;color:var(--gold);' +
-               'display:flex;align-items:center;justify-content:center;font-size:1.2rem;">' +
-            '<i class="fas fa-gem"></i>' +
-          '</div>' +
-          '<div>' +
-            '<h3 style="margin:0;font-size:1.2rem;color:var(--text-main);">' + escapeHtml(item.item || 'Untitled') + '</h3>' +
-            '<div style="font-size:0.8rem;color:var(--text-sub);margin-top:2px;">' +
-              '<span class="badge ' + metalClass + '">' + escapeHtml(metal) + '</span> · ' + escapeHtml(carat) +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="details-grid">' +
-          '<div class="detail-box">' +
-            '<div class="detail-label">Category</div>' +
-            '<div class="detail-value">' + escapeHtml(cat) + '</div>' +
-          '</div>' +
-          '<div class="detail-box">' +
-            '<div class="detail-label">Status</div>' +
-            '<div class="detail-value"><span class="badge ' + statusClass + '">' + escapeHtml(status) + '</span></div>' +
-          '</div>' +
-          '<div class="detail-box">' +
-            '<div class="detail-label">Weight</div>' +
-            '<div class="detail-value">' + weight.toFixed(3) + ' g</div>' +
-          '</div>' +
-          '<div class="detail-box">' +
-            '<div class="detail-label">Price</div>' +
-            '<div class="detail-value highlight">' + fmt(price) + '</div>' +
-          '</div>' +
-          '<div class="detail-box full" style="border:1px solid var(--border);background:white;">' +
-            '<div class="detail-label">Item ID</div>' +
-            '<div class="detail-value" style="font-size:0.8rem;color:var(--text-sub);font-family:monospace;">' +
-              escapeHtml(id) +
-            '</div>' +
-          '</div>' +
-        '</div>';
-
-      $('view-modal').classList.add('active');
-    }
-
-    function closeViewModal() {
-      $('view-modal').classList.remove('active');
-      currentViewId = null;
-    }
-
-    function editFromView() {
-      if (!currentViewId) return;
-      var id = currentViewId;
-      closeViewModal();
-      setTimeout(function () { editStock(id); }, 150);
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ROW ACTIONS
-       ═══════════════════════════════════════════════════════ */
-    function toggleSold(id) {
-      var newStatus;
-      try {
-        var data = loadData();
-        var item = data.stock.filter(function (row) { return row.id === id; })[0];
-        if (!item) return;
-        item.status = (item.status === 'Sold') ? 'In Stock' : 'Sold';
-        newStatus = item.status;
-        persist(data);
-      } catch (e) {
-        notify('Update failed: ' + e.message, 'error');
-        return;
-      }
-      renderSummary();
-      renderStock();
-      notify('Marked as ' + newStatus + '.', 'success');
-    }
-
-    function duplicateStock(id) {
-      var original;
-      try {
-        original = loadData().stock.filter(function (row) { return row.id === id; })[0];
-      } catch (e) {
-        notify(e.message, 'error');
-        return;
-      }
-      if (!original) { notify('Item not found.', 'error'); return; }
-
-      try {
-        var record = {
-          item:   original.item + ' (Copy)',
-          metal:  original.metal || 'Gold',
-          carat:  original.carat || '-',
-          cat:    original.cat || 'General',
-          weight: original.weight,
-          price:  original.price,
-          status: 'In Stock'
-        };
-
-        var db = getDB();
-        if (typeof db.addStock === 'function') {
-          db.addStock(record);
-        } else {
-          var data = loadData();
-          record.id = newId();
-          data.stock.push(record);
-          persist(data);
-        }
-      } catch (err) {
-        notify('Duplicate failed: ' + (err.message || err), 'error');
-        return;
-      }
-
-      renderSummary();
-      renderStock();
-      notify('Item duplicated.', 'success');
-    }
-
-    function deleteStock(id) {
-      var item;
-      try {
-        item = loadData().stock.filter(function (row) { return row.id === id; })[0];
-      } catch (e) {
-        notify(e.message, 'error');
-        return;
-      }
-      if (!item) { notify('Item not found.', 'error'); return; }
-
-      confirmAction(
-        'Delete Item?',
-        'Permanently delete "' + (item.item || 'this item') + '"? This cannot be undone.',
-        'Yes, Delete',
-        'Cancel',
-        function () {
-          try {
-            var data = loadData();
-            data.stock = data.stock.filter(function (row) { return row.id !== id; });
-            persist(data);
-          } catch (e) {
-            notify('Delete failed: ' + e.message, 'error');
-            return;
-          }
-          selectedIds.delete(id);
-          renderSummary();
-          renderStock();
-          notify('Item deleted.', 'success');
-        }
-      );
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       CSV EXPORT
-       ═══════════════════════════════════════════════════════ */
-    function exportCSV() {
-      var items;
-      try { items = loadData().stock; }
-      catch (e) { notify(e.message, 'error'); return; }
-
-      if (items.length === 0) { notify('No items to export.', 'info'); return; }
-
-      var rows = [['ID', 'Name', 'Metal', 'Carat', 'Category', 'Weight (g)', 'Rate/g', 'Price', 'Status']];
-
-      items.forEach(function (item) {
-        var weight = toNum(item.weight);
-        var price  = toNum(item.price);
-        var rate   = weight > 0 ? (price / weight).toFixed(2) : '0';
-        rows.push([
-          item.id || '',
-          item.item || '',
-          item.metal || 'Gold',
-          item.carat || '-',
-          item.cat || 'General',
-          weight.toFixed(3),
-          rate,
-          price.toFixed(2),
-          item.status || 'In Stock'
-        ]);
-      });
-
-      var csv = rows.map(function (row) {
-        return row.map(function (cell) {
-          return '"' + String(cell).replace(/"/g, '""') + '"';
-        }).join(',');
-      }).join('\r\n');
-
-      var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var link = document.createElement('a');
-      link.href = url;
-      link.download = 'SwarnJyoti_Stock_' + new Date().toISOString().split('T')[0] + '.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      notify('Stock exported to CSV.', 'success');
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PRINT
-       ═══════════════════════════════════════════════════════ */
-    function printStockList() {
-      var rows = visibleRows();
-      if (rows.length === 0) { notify('Nothing to print (no items match the filters).', 'info'); return; }
-
-      var items;
-      try { items = loadData().stock; }
-      catch (e) { notify(e.message, 'error'); return; }
-
-      var byId = {};
-      items.forEach(function (item) { byId[item.id] = item; });
-
-      var totalValue = 0;
-      var totalWeight = 0;
-      var tableRows = '';
-
-      rows.forEach(function (row, index) {
-        var item = byId[row.getAttribute('data-id')];
-        if (!item) return;
-
-        var weight = toNum(item.weight);
-        var price  = toNum(item.price);
-        totalValue  += price;
-        totalWeight += weight;
-
-        var rate = weight > 0 ? price / weight : 0;
-
-        tableRows +=
-          '<tr>' +
-            '<td>' + (index + 1) + '</td>' +
-            '<td>' + escapeHtml(item.item) + '</td>' +
-            '<td>' + escapeHtml(item.metal || 'Gold') + '</td>' +
-            '<td>' + escapeHtml(item.carat || '-') + '</td>' +
-            '<td>' + escapeHtml(item.cat || 'General') + '</td>' +
-            '<td class="r">' + weight.toFixed(3) + ' g</td>' +
-            '<td class="r">' + (rate > 0 ? fmt(rate) : '—') + '</td>' +
-            '<td class="r">' + fmt(price) + '</td>' +
-            '<td>' + escapeHtml(item.status || 'In Stock') + '</td>' +
-          '</tr>';
-      });
-
-      var styles = '' +
-        '@page{size:A4 landscape;margin:10mm;}' +
-        'body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#102440;}' +
-        'h1{font-size:20pt;margin:0;letter-spacing:.5px;}' +
-        '.sub{font-size:9pt;color:#555;}' +
-        '.title{font-size:11pt;font-weight:700;margin-top:8px;}' +
-        '.head{text-align:center;border-bottom:3px double #102440;padding-bottom:10px;margin-bottom:12px;}' +
-        '.stamp{text-align:right;font-size:8pt;color:#666;margin-bottom:5px;}' +
-        'table{width:100%;border-collapse:collapse;font-size:8pt;}' +
-        'th{border:1px solid #333;background:#eaeaea;padding:4px 6px;text-align:left;}' +
-        'td{border:1px solid #666;padding:3px 6px;}' +
-        'td.r,th.r{text-align:right;}' +
-        '.total{text-align:right;font-size:9pt;font-weight:700;margin-top:8px;}';
-
-      var doc = '' +
-        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Stock Inventory</title>' +
-        '<style>' + styles + '</style>' +
-        '</head><body>' +
-          '<div class="head">' +
-            '<h1>SWARN JYOTI JEWELLERS</h1>' +
-            '<div class="sub">Soni Gali, Sasamusa, Gopalganj, Bihar - 841505 · Ph: 9939332968</div>' +
-            '<div class="title">STOCK INVENTORY</div>' +
-          '</div>' +
-          '<div class="stamp">Printed: ' + new Date().toLocaleDateString('en-GB') + '</div>' +
-          '<table><thead><tr>' +
-            '<th>#</th><th>Item</th><th>Metal</th><th>Carat</th><th>Category</th>' +
-            '<th class="r">Weight</th><th class="r">Rate/g</th><th class="r">Price</th><th>Status</th>' +
-          '</tr></thead><tbody>' + tableRows + '</tbody></table>' +
-          '<div class="total">Total: ' + rows.length + ' items · ' +
-            totalWeight.toFixed(3) + ' g · ' + fmt(totalValue) + '</div>' +
-        '</body></html>';
-
-      var printWindow = window.open('', '_blank');
-      if (!printWindow) { notify('Please allow pop-ups to print.', 'error'); return; }
-
-      printWindow.document.open();
-      printWindow.document.write(doc);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(function () { printWindow.print(); }, 400);
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       DROPDOWN MENU HELPERS
-       ═══════════════════════════════════════════════════════ */
-    function closeAllDropdowns() {
-      var open = document.querySelectorAll('.dropdown.show');
-      Array.prototype.forEach.call(open, function (el) { el.classList.remove('show'); });
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       TABLE EVENT DELEGATION
-       ═══════════════════════════════════════════════════════ */
-    function handleTableClick(event) {
-      var target = event.target;
-
-      var menuButton = target.closest ? target.closest('button[data-action="menu"]') : null;
-      if (menuButton) {
-        event.stopPropagation();
-        var dropdown = menuButton.parentElement;
-        var wasOpen = dropdown.classList.contains('show');
-        closeAllDropdowns();
-        if (!wasOpen) dropdown.classList.add('show');
-        return;
-      }
-
-      var actionEl = target.closest ? target.closest('[data-action]') : null;
-      if (!actionEl) return;
-
-      var action = actionEl.getAttribute('data-action');
-      if (action === 'menu') return;
-
-      event.stopPropagation();
-      closeAllDropdowns();
-
-      var id = actionEl.getAttribute('data-id');
-
-      if (action === 'view')             viewStock(id);
-      else if (action === 'edit')        editStock(id);
-      else if (action === 'duplicate')   duplicateStock(id);
-      else if (action === 'toggle-sold') toggleSold(id);
-      else if (action === 'delete')      deleteStock(id);
-    }
-
-    function handleTableChange(event) {
-      var target = event.target;
-      if (!target || !target.matches) return;
-      if (target.matches('input[type="checkbox"][data-id]')) {
-        toggleSelect(target.getAttribute('data-id'));
-      }
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PUBLIC API (needed by inline handlers in generated HTML)
-       ═══════════════════════════════════════════════════════ */
-    window.openAddModal       = openAddModal;
-    window.closeAddModal      = closeAddModal;
-    window.onAddMetalChange   = onAddMetalChange;
-    window.saveNewItem        = saveNewItem;
-    window.editStock          = editStock;
-    window.closeEditModal     = closeEditModal;
-    window.saveStockEdit      = saveStockEdit;
-    window.viewStock          = viewStock;
-    window.closeViewModal     = closeViewModal;
-    window.editFromView       = editFromView;
-    window.toggleSold         = toggleSold;
-    window.duplicateStock     = duplicateStock;
-    window.deleteStock        = deleteStock;
-    window.toggleSelect       = toggleSelect;
-    window.toggleSelectAll    = toggleSelectAll;
-    window.applyFilters       = applyFilters;
-    window.resetStockFilters  = resetStockFilters;
-    window.clearSelection     = clearSelection;
-    window.bulkMarkSold       = bulkMarkSold;
-    window.bulkMarkInStock    = bulkMarkInStock;
-    window.bulkDelete         = bulkDelete;
-    window.exportCSV          = exportCSV;
-    window.printStockList     = printStockList;
-    window.clearError         = clearError;
-
-    /* ═══════════════════════════════════════════════════════
-       INITIALISATION
-       ═══════════════════════════════════════════════════════ */
-    function init() {
-      /* Global click → close any open 3-dot menu */
-      document.addEventListener('click', closeAllDropdowns);
-
-      /* Table delegation */
-      var tbody = $('stock-body');
-      if (tbody) {
-        tbody.addEventListener('click', handleTableClick);
-        tbody.addEventListener('change', handleTableChange);
-      }
-
-      /* Sortable headers */
-      var sortableHeaders = document.querySelectorAll('#stock-table th[data-sort]');
-      Array.prototype.forEach.call(sortableHeaders, function (th) {
-        th.addEventListener('click', function () {
-          sortStock(th.getAttribute('data-sort'));
-        });
-      });
-
-      /* Enter key submits modals */
-      var addModal = $('add-modal');
-      if (addModal) {
-        addModal.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter') { event.preventDefault(); saveNewItem(); }
-        });
-      }
-
-      var editModal = $('edit-modal');
-      if (editModal) {
-        editModal.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter') { event.preventDefault(); saveStockEdit(); }
-        });
-      }
-
-      /* First paint */
-      try {
-        ensureIds();
-      } catch (e) {
-        notify(e.message, 'error');
-        return;
-      }
-
-      renderSummary();
-      renderStock();
-
-      /* Re-sync when returning via back/forward cache */
-      window.addEventListener('pageshow', function () {
-        renderSummary();
-        renderStock();
-      });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-  </script>
+  });
+
+  // Bulk bar
+  $('bulk-sold').addEventListener('click', () => bulkSetStatus('Sold'));
+  $('bulk-instock').addEventListener('click', () => bulkSetStatus('In Stock'));
+  $('bulk-delete').addEventListener('click', bulkDelete);
+  $('bulk-clear').addEventListener('click', clearSelection);
+
+  // Modals: Esc + outside click
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEditModal(); closeViewModal(); } });
+  document.querySelectorAll('.modal-overlay').forEach(ov =>
+    ov.addEventListener('mousedown', e => { if (e.target === ov) ov.classList.remove('active'); }));
+
+  refresh();
+  window.addEventListener('pageshow', refresh);
+});
+</script>
 </body>
 </html>

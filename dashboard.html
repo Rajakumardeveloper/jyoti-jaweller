@@ -379,12 +379,12 @@
             <div class="kpi-icon navy"><i class="fas fa-gem"></i></div>
           </div>
           <p class="kpi-value small" id="kpi-stock-value">₹0</p>
-          <p class="kpi-sub" id="kpi-stock-sub">0 items in stock</p>
+          <p class="kpi-sub" id="kpi-stock-sub">0 pcs in stock</p>
           <p class="kpi-sub" id="kpi-stock-weight" style="margin-top:6px;">—</p>
         </div>
       </div>
 
-      <!-- ═══ QUICK ACTIONS (Section 2 + Section 10) ═══ -->
+      <!-- ═══ QUICK ACTIONS ═══ -->
       <div class="quick-grid">
         <a href="invoice.html" class="quick-btn primary">
           <i class="fas fa-plus"></i>
@@ -582,6 +582,11 @@
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[c]));
     }
+    /* Stock qty helper — old records without qty default to 1 */
+    function qtyOf(it) {
+      const q = parseInt(it && it.qty, 10);
+      return isFinite(q) && q >= 1 ? q : 1;
+    }
     function todayDMY() { return new Date().toLocaleDateString('en-GB'); }
     function parseDateSafe(str) {
       if (!str) return null;
@@ -694,10 +699,13 @@
         }
       });
 
-      let stockValue = 0, goldWt = 0, silverWt = 0;
+      /* ── STOCK: weight & value are PER PIECE in storage → × qty for totals ── */
+      let stockValue = 0, goldWt = 0, silverWt = 0, totalPcs = 0;
       CTX.stock.forEach(it => {
-        stockValue += toNum(it.price);
-        const wt = toNum(it.weight);
+        const qty = qtyOf(it);
+        const wt  = toNum(it.weight) * qty;
+        stockValue += toNum(it.price) * qty;
+        totalPcs   += qty;
         if ((it.metal || 'Gold') === 'Gold') goldWt += wt;
         else if (it.metal === 'Silver') silverWt += wt;
       });
@@ -733,10 +741,10 @@
       document.getElementById('kpi-outstanding-sub').innerText =
         `${outstandingInvoices} invoice${outstandingInvoices === 1 ? '' : 's'} • ${outstandingCustomers.size} customer${outstandingCustomers.size === 1 ? '' : 's'}`;
 
-      // Stock
+      // Stock — value & weight are totals across all pieces
       document.getElementById('kpi-stock-value').innerText = fmt(stockValue);
       document.getElementById('kpi-stock-sub').innerText =
-        `${CTX.stock.length} item${CTX.stock.length === 1 ? '' : 's'} in stock`;
+        `${totalPcs} pc${totalPcs === 1 ? '' : 's'} in stock`;
       document.getElementById('kpi-stock-weight').innerText =
         `Gold ${goldWt.toFixed(3)} g • Silver ${silverWt.toFixed(3)} g`;
 
@@ -888,7 +896,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       RECENT INVOICES (View + Print)
+       RECENT INVOICES
        ═══════════════════════════════════════════════════════════ */
     function renderRecentInvoices() {
       const tbody = document.getElementById('recent-invoices-body');
@@ -924,7 +932,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       RECENT PAYMENTS (with Related Invoice)
+       RECENT PAYMENTS
        ═══════════════════════════════════════════════════════════ */
     function renderRecentPayments() {
       const tbody = document.getElementById('recent-payments-body');
@@ -996,18 +1004,20 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       INVENTORY
+       INVENTORY — totals × qty (weight & price stored per-piece)
        ═══════════════════════════════════════════════════════════ */
     function renderInventory() {
-      let goldWt = 0, silverWt = 0, value = 0;
+      let goldWt = 0, silverWt = 0, value = 0, totalPcs = 0;
       CTX.stock.forEach(it => {
-        const wt = toNum(it.weight);
+        const qty = qtyOf(it);
+        const wt  = toNum(it.weight) * qty;
+        totalPcs += qty;
+        value    += toNum(it.price) * qty;
         if ((it.metal || 'Gold') === 'Gold') goldWt += wt;
         else if (it.metal === 'Silver') silverWt += wt;
-        value += toNum(it.price);
       });
 
-      document.getElementById('inv-items').innerText  = CTX.stock.length;
+      document.getElementById('inv-items').innerText  = totalPcs;
       document.getElementById('inv-gold').innerText   = goldWt.toFixed(3) + ' g';
       document.getElementById('inv-silver').innerText = silverWt.toFixed(3) + ' g';
       document.getElementById('inv-value').innerText  = fmt(value);
@@ -1017,9 +1027,15 @@
       if (recent.length === 0) {
         el.innerHTML = '<span style="color:#8a9bb0;">No stock added yet.</span>';
       } else {
-        el.innerHTML = recent.map(it =>
-          `<div style="padding:4px 0;border-bottom:1px dashed #eaedf2;">• ${escapeHtml(it.item || 'Item')} <span style="color:#8a9bb0;">(${toNum(it.weight).toFixed(3)}g)</span></div>`
-        ).join('');
+        el.innerHTML = recent.map(it => {
+          const qty = qtyOf(it);
+          const unitWt = toNum(it.weight);
+          const totalWt = unitWt * qty;
+          const label = qty > 1
+            ? `${qty} pcs × ${unitWt.toFixed(3)}g = ${totalWt.toFixed(3)}g`
+            : `${totalWt.toFixed(3)}g`;
+          return `<div style="padding:4px 0;border-bottom:1px dashed #eaedf2;">• ${escapeHtml(it.item || 'Item')} <span style="color:#8a9bb0;">(${label})</span></div>`;
+        }).join('');
       }
     }
 
