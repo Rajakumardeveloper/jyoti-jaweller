@@ -51,9 +51,7 @@
       font-weight: 700; font-size: 0.8rem;
     }
     .user-name { font-size: 0.8rem; font-weight: 600; color: var(--navy); }
-    @media (max-width: 600px) {
-      .dash-header-right .user-chip .user-name { display: none; }
-    }
+    @media (max-width: 600px) { .dash-header-right .user-chip .user-name { display: none; } }
 
     /* ═════════════ KPI CARDS ═════════════ */
     .kpi-grid {
@@ -64,6 +62,7 @@
       background: white; border-radius: var(--radius); padding: 1.2rem 1.3rem;
       box-shadow: var(--shadow-sm); border: 1px solid #eaedf2;
       position: relative; overflow: hidden; transition: 0.2s;
+      display: flex; flex-direction: column;
     }
     .kpi-card:hover { box-shadow: var(--shadow-md); }
     .kpi-card::before {
@@ -93,11 +92,13 @@
       margin: 0 0 4px; line-height: 1.2; word-break: break-word;
     }
     .kpi-value.small { font-size: 1.2rem; }
-    .kpi-sub { font-size: 0.75rem; color: #8a9bb0; margin: 0; font-weight: 500; }
+    .kpi-sub { font-size: 0.75rem; color: #8a9bb0; margin: 0; font-weight: 500; line-height: 1.4; }
     .kpi-trend {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: 0.7rem; font-weight: 700; padding: 2px 7px;
-      border-radius: 8px; margin-top: 6px;
+      border-radius: 8px; margin-top: auto; align-self: flex-start;
+      max-width: 100%;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .kpi-trend.up   { background: #E4F5E9; color: #1b6b3f; }
     .kpi-trend.down { background: #FCE8E9; color: #a12a3b; }
@@ -130,6 +131,58 @@
     .quick-btn-sub { font-size: 0.7rem; color: #8a9bb0; }
     .quick-btn.primary .quick-btn-sub { color: rgba(255,255,255,0.7); }
     @media (max-width: 900px) { .quick-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* ═════════════ PERIOD SELECTOR + PERFORMANCE ═════════════ */
+    .period-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: white; border-radius: var(--radius); padding: 10px 16px;
+      box-shadow: var(--shadow-sm); border: 1px solid #eaedf2;
+      margin-bottom: 14px; flex-wrap: wrap; gap: 12px;
+    }
+    .period-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.95rem; font-weight: 700; color: var(--navy);
+    }
+    .period-title i { color: var(--gold); }
+    .period-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+    .period-chip {
+      padding: 6px 14px; border: 1px solid transparent; border-radius: 20px;
+      background: transparent; color: #5d6f88; font-weight: 600; font-size: 0.78rem;
+      cursor: pointer; transition: 0.15s;
+    }
+    .period-chip:hover { background: var(--soft-grey); color: var(--navy); }
+    .period-chip.active { background: var(--navy); color: white; }
+
+    .perf-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 1.5rem;
+    }
+    .perf-card {
+      background: white; border-radius: var(--radius); padding: 1rem 1.1rem;
+      box-shadow: var(--shadow-sm); border: 1px solid #eaedf2;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .perf-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .perf-icon.sales       { background: #FFF2DD; color: #B8860B; }
+    .perf-icon.collection  { background: #E4F5E9; color: #1b6b3f; }
+    .perf-icon.avg         { background: #e8edf5; color: var(--navy); }
+    .perf-icon.customers   { background: #EDEBFA; color: #4b2ea3; }
+    .perf-text { min-width: 0; flex: 1; }
+    .perf-label {
+      font-size: 0.65rem; text-transform: uppercase; font-weight: 700;
+      color: #6b7b94; letter-spacing: 0.05em; margin: 0 0 3px;
+    }
+    .perf-value {
+      font-size: 1.25rem; font-weight: 800; color: var(--navy);
+      margin: 0 0 2px; line-height: 1.2; word-break: break-word;
+    }
+    .perf-sub { font-size: 0.7rem; color: #8a9bb0; margin: 0; font-weight: 500; }
+    @media (max-width: 1024px) { .perf-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px)  { .perf-grid { grid-template-columns: 1fr; } }
 
     /* ═════════════ CHART ═════════════ */
     .chart-card {
@@ -166,9 +219,9 @@
     }
     .chart-empty i { font-size: 2rem; color: #dce2ea; margin-bottom: 10px; }
 
-    /* ═════════════ FINANCIAL SUMMARY ═════════════ */
+    /* ═════════════ FINANCIAL SUMMARY (3 pills) ═════════════ */
     .fin-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
+      display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 12px; margin-bottom: 1.5rem;
     }
     .fin-pill {
@@ -184,7 +237,6 @@
     .fin-pill.invoiced i    { background: #e8edf5; color: var(--navy); }
     .fin-pill.collected i   { background: #E4F5E9; color: #1b6b3f; }
     .fin-pill.outstanding i { background: #FCE8E9; color: #a12a3b; }
-    .fin-pill.advances i    { background: #EDEBFA; color: #4b2ea3; }
     .fin-pill-text { min-width: 0; }
     .fin-pill-label {
       font-size: 0.68rem; text-transform: uppercase; color: #6b7b94;
@@ -193,6 +245,9 @@
     .fin-pill-value {
       font-size: 1rem; font-weight: 800; color: var(--navy);
       margin: 0; word-break: break-word;
+    }
+    .fin-pill-sub {
+      font-size: 0.68rem; color: #8a9bb0; margin: 2px 0 0; font-weight: 500;
     }
     @media (max-width: 1024px) { .fin-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 500px)  { .fin-grid { grid-template-columns: 1fr; } }
@@ -272,6 +327,58 @@
     .alert-row-amount { font-size: 0.85rem; font-weight: 800; color: #a12a3b; text-align: right; white-space: nowrap; }
     .alert-row a { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 700; }
 
+    /* ═════════════ TOP CUSTOMERS ═════════════ */
+    .top-cust-list { display: flex; flex-direction: column; gap: 2px; }
+    .top-cust-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0; border-bottom: 1px solid #f5f6f8;
+    }
+    .top-cust-row:last-child { border-bottom: none; }
+    .top-cust-rank {
+      width: 26px; height: 26px; border-radius: 8px;
+      background: var(--soft-grey); color: #5d6f88;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.75rem; flex-shrink: 0;
+    }
+    .top-cust-rank.gold   { background: #FFF2DD; color: #B8860B; }
+    .top-cust-rank.silver { background: #eef0f5; color: #4a5568; }
+    .top-cust-rank.bronze { background: #FCE8E9; color: #a12a3b; }
+    .top-cust-info { min-width: 0; flex: 1; }
+    .top-cust-name {
+      font-size: 0.85rem; font-weight: 600; color: var(--navy);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .top-cust-meta { font-size: 0.7rem; color: #8a9bb0; margin-top: 1px; }
+    .top-cust-amount {
+      font-size: 0.85rem; font-weight: 800; color: var(--navy);
+      white-space: nowrap;
+    }
+
+    /* ═════════════ PAYMENT MODES ═════════════ */
+    .mode-bar-item { margin-bottom: 14px; }
+    .mode-bar-item:last-child { margin-bottom: 0; }
+    .mode-bar-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 5px; font-size: 0.82rem;
+    }
+    .mode-bar-name { font-weight: 600; color: var(--navy); }
+    .mode-bar-pct { font-size: 0.7rem; color: #8a9bb0; margin-left: 6px; font-weight: 500; }
+    .mode-bar-amount { font-weight: 800; color: var(--navy); }
+    .mode-bar-track {
+      height: 8px; background: var(--soft-grey); border-radius: 4px;
+      overflow: hidden;
+    }
+    .mode-bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .mode-bar-fill.cash  { background: #28a745; }
+    .mode-bar-fill.upi   { background: #3b82f6; }
+    .mode-bar-fill.card  { background: #8b5cf6; }
+    .mode-bar-fill.bank  { background: #f59e0b; }
+    .mode-bar-fill.other { background: #6b7b94; }
+
+    /* ═════════════ INVENTORY MINI ═════════════ */
     .inv-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .inv-mini-item { background: var(--soft-grey); border-radius: 10px; padding: 10px 12px; }
     .inv-mini-label {
@@ -361,7 +468,7 @@
           </div>
           <p class="kpi-value" id="kpi-today-collection">₹0</p>
           <p class="kpi-sub" id="kpi-today-collection-sub">0 payment transactions</p>
-          <p class="kpi-sub" id="kpi-today-modes" style="margin-top:6px;">—</p>
+          <span class="kpi-trend flat" id="kpi-today-collection-trend"><i class="fas fa-minus"></i> No collections yet</span>
         </div>
 
         <div class="kpi-card rose">
@@ -371,6 +478,7 @@
           </div>
           <p class="kpi-value" id="kpi-outstanding">₹0</p>
           <p class="kpi-sub" id="kpi-outstanding-sub">0 invoices • 0 customers</p>
+          <span class="kpi-trend flat" id="kpi-outstanding-trend"><i class="fas fa-check"></i> All clear</span>
         </div>
 
         <div class="kpi-card navy">
@@ -380,7 +488,7 @@
           </div>
           <p class="kpi-value small" id="kpi-stock-value">₹0</p>
           <p class="kpi-sub" id="kpi-stock-sub">0 pcs in stock</p>
-          <p class="kpi-sub" id="kpi-stock-weight" style="margin-top:6px;">—</p>
+          <span class="kpi-trend flat" id="kpi-stock-trend"><i class="fas fa-box"></i> Inventory ready</span>
         </div>
       </div>
 
@@ -408,10 +516,61 @@
         </a>
       </div>
 
+      <!-- ═══ PERIOD SELECTOR + PERFORMANCE ═══ -->
+      <div class="period-bar">
+        <div class="period-title">
+          <i class="fas fa-chart-line"></i>
+          <span>Business Performance</span>
+        </div>
+        <div class="period-chips" id="period-chips">
+          <button class="period-chip active" data-period="today">Today</button>
+          <button class="period-chip" data-period="week">7 Days</button>
+          <button class="period-chip" data-period="month">30 Days</button>
+          <button class="period-chip" data-period="quarter">3 Months</button>
+          <button class="period-chip" data-period="year">This Year</button>
+          <button class="period-chip" data-period="all">All Time</button>
+        </div>
+      </div>
+
+      <div class="perf-grid">
+        <div class="perf-card">
+          <div class="perf-icon sales"><i class="fas fa-rupee-sign"></i></div>
+          <div class="perf-text">
+            <p class="perf-label">Period Sales</p>
+            <p class="perf-value" id="perf-sales">₹0</p>
+            <p class="perf-sub" id="perf-sales-sub">0 invoices</p>
+          </div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-icon collection"><i class="fas fa-wallet"></i></div>
+          <div class="perf-text">
+            <p class="perf-label">Period Collection</p>
+            <p class="perf-value" id="perf-collection">₹0</p>
+            <p class="perf-sub" id="perf-collection-sub">0 payments</p>
+          </div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-icon avg"><i class="fas fa-chart-bar"></i></div>
+          <div class="perf-text">
+            <p class="perf-label">Avg Invoice Value</p>
+            <p class="perf-value" id="perf-avg">₹0</p>
+            <p class="perf-sub" id="perf-avg-sub">No invoices</p>
+          </div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-icon customers"><i class="fas fa-users"></i></div>
+          <div class="perf-text">
+            <p class="perf-label">Customers Served</p>
+            <p class="perf-value" id="perf-customers">0</p>
+            <p class="perf-sub" id="perf-customers-sub">in period</p>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ CHART ═══ -->
       <div class="chart-card">
         <div class="chart-header">
-          <h3><i class="fas fa-chart-line" style="color:var(--gold);margin-right:8px;"></i>Sales &amp; Collection Analytics</h3>
+          <h3><i class="fas fa-chart-line" style="color:var(--gold);margin-right:8px;"></i>Sales &amp; Collection Trend</h3>
           <div class="chart-tabs">
             <button class="chart-tab active" data-days="7">7 Days</button>
             <button class="chart-tab" data-days="30">30 Days</button>
@@ -432,13 +591,14 @@
         </div>
       </div>
 
-      <!-- ═══ FINANCIAL SUMMARY ═══ -->
+      <!-- ═══ FINANCIAL SUMMARY (3 pills) ═══ -->
       <div class="fin-grid">
         <div class="fin-pill invoiced">
           <i class="fas fa-file-invoice-dollar"></i>
           <div class="fin-pill-text">
             <p class="fin-pill-label">Total Invoiced</p>
             <p class="fin-pill-value" id="fin-invoiced">₹0</p>
+            <p class="fin-pill-sub" id="fin-invoiced-sub">0 invoices</p>
           </div>
         </div>
         <div class="fin-pill collected">
@@ -446,6 +606,7 @@
           <div class="fin-pill-text">
             <p class="fin-pill-label">Total Collected</p>
             <p class="fin-pill-value" id="fin-collected">₹0</p>
+            <p class="fin-pill-sub" id="fin-collected-sub">0% of invoiced</p>
           </div>
         </div>
         <div class="fin-pill outstanding">
@@ -453,13 +614,29 @@
           <div class="fin-pill-text">
             <p class="fin-pill-label">Outstanding Balance</p>
             <p class="fin-pill-value" id="fin-outstanding">₹0</p>
+            <p class="fin-pill-sub" id="fin-outstanding-sub">0% pending</p>
           </div>
         </div>
-        <div class="fin-pill advances">
-          <i class="fas fa-handshake"></i>
-          <div class="fin-pill-text">
-            <p class="fin-pill-label">Customer Advances</p>
-            <p class="fin-pill-value" id="fin-advances">₹0</p>
+      </div>
+
+      <!-- ═══ TOP CUSTOMERS + PAYMENT MODES ═══ -->
+      <div class="dash-row even">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3><i class="fas fa-crown"></i> Top Customers</h3>
+            <span class="dash-card-link" id="top-cust-period-label">Today</span>
+          </div>
+          <div id="top-customers-body" class="top-cust-list">
+            <div class="dash-empty"><i class="fas fa-users"></i>No customer activity in this period</div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3><i class="fas fa-credit-card"></i> Payment Modes</h3>
+            <span class="dash-card-link" id="pay-modes-period-label">Today</span>
+          </div>
+          <div id="payment-modes-body">
+            <div class="dash-empty"><i class="fas fa-wallet"></i>No payments in this period</div>
           </div>
         </div>
       </div>
@@ -536,7 +713,7 @@
           </div>
           <div class="inv-mini">
             <div class="inv-mini-item">
-              <p class="inv-mini-label">Total Items</p>
+              <p class="inv-mini-label">Total Pieces</p>
               <p class="inv-mini-value" id="inv-items">0</p>
             </div>
             <div class="inv-mini-item">
@@ -582,7 +759,6 @@
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[c]));
     }
-    /* Stock qty helper — old records without qty default to 1 */
     function qtyOf(it) {
       const q = parseInt(it && it.qty, 10);
       return isFinite(q) && q >= 1 ? q : 1;
@@ -602,6 +778,38 @@
     function endOfDay(d)   { const x = new Date(d); x.setHours(23,59,59,999); return x; }
 
     /* ═══════════════════════════════════════════════════════════
+       PERIOD RANGE
+       ═══════════════════════════════════════════════════════════ */
+    let currentPeriod = 'today';
+
+    const PERIOD_NAMES = {
+      today:   'Today',
+      week:    'Last 7 Days',
+      month:   'Last 30 Days',
+      quarter: 'Last 3 Months',
+      year:    'This Year',
+      all:     'All Time'
+    };
+
+    function getPeriodRange(period) {
+      const now = new Date();
+      const end = endOfDay(now);
+      let start = startOfDay(now);
+      if (period === 'today') { /* default today */ }
+      else if (period === 'week')    { start = new Date(now); start.setDate(start.getDate() - 6);  start = startOfDay(start); }
+      else if (period === 'month')   { start = new Date(now); start.setDate(start.getDate() - 29); start = startOfDay(start); }
+      else if (period === 'quarter') { start = new Date(now); start.setDate(start.getDate() - 89); start = startOfDay(start); }
+      else if (period === 'year')    { start = new Date(now.getFullYear(), 0, 1); }
+      else if (period === 'all')     { start = new Date(0); }
+      return { start, end, label: PERIOD_NAMES[period] || 'Today' };
+    }
+
+    function inPeriod(dateStr, range) {
+      const d = parseDateSafe(dateStr);
+      return !!d && d >= range.start && d <= range.end;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
        STATE
        ═══════════════════════════════════════════════════════════ */
     const CTX = {
@@ -611,7 +819,7 @@
     };
 
     /* ═══════════════════════════════════════════════════════════
-       LOAD & RECONCILE — payments from transactions (source of truth)
+       LOAD & RECONCILE
        ═══════════════════════════════════════════════════════════ */
     function loadData() {
       let d = {};
@@ -670,36 +878,41 @@
       const yest  = new Date(); yest.setDate(yest.getDate() - 1);
       const yestDMY = yest.toLocaleDateString('en-GB');
 
+      /* ── Today's Sales + yesterday comparison ── */
       let todaySales = 0, todaySalesCount = 0, yestSales = 0;
       CTX.invoices.forEach(inv => {
         if (inv.date === today) { todaySales += toNum(inv.total); todaySalesCount++; }
         if (inv.date === yestDMY) { yestSales += toNum(inv.total); }
       });
 
-      let todayCollection = 0, todayCollectionCount = 0;
-      const modesToday = {};
+      /* ── Today's Collection + yesterday comparison (mode breakdown removed) ── */
+      let todayCollection = 0, todayCollectionCount = 0, yestCollection = 0;
       CTX.transactions.forEach(t => {
-        if (t.date !== today) return;
         if (t.type !== 'Payment' && t.type !== 'Advance') return;
         const amt = toNum(t.amount);
-        todayCollection += amt;
-        todayCollectionCount++;
-        const mode = t.mode || 'Cash';
-        modesToday[mode] = (modesToday[mode] || 0) + amt;
+        if (t.date === today)   { todayCollection += amt; todayCollectionCount++; }
+        if (t.date === yestDMY) { yestCollection += amt; }
       });
 
-      let totalOutstanding = 0, outstandingInvoices = 0;
+      /* ── Outstanding ── */
+      let totalOutstanding = 0, outstandingInvoices = 0, overdueCount = 0;
       const outstandingCustomers = new Set();
+      const nowMs = Date.now();
       CTX.invoices.forEach(inv => {
         const due = CTX.invoiceDue[inv.id];
         if (due > 0.01) {
           totalOutstanding += due;
           outstandingInvoices++;
           if (inv.customerId) outstandingCustomers.add(inv.customerId);
+          const d = parseDateSafe(inv.date);
+          if (d) {
+            const daysOld = Math.floor((nowMs - d.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysOld > 30) overdueCount++;
+          }
         }
       });
 
-      /* ── STOCK: weight & value are PER PIECE in storage → × qty for totals ── */
+      /* ── Stock (per-piece × qty) ── */
       let stockValue = 0, goldWt = 0, silverWt = 0, totalPcs = 0;
       CTX.stock.forEach(it => {
         const qty = qtyOf(it);
@@ -710,45 +923,72 @@
         else if (it.metal === 'Silver') silverWt += wt;
       });
 
-      // Today's Sales
+      // ── Today's Sales card ──
       document.getElementById('kpi-today-sales').innerText = fmt(todaySales);
-      document.getElementById('kpi-today-sales-sub').innerText =
-        `${todaySalesCount} invoice${todaySalesCount === 1 ? '' : 's'} generated today`;
+      document.getElementById('kpi-today-sales-sub').innerText = todaySalesCount > 0
+        ? `${todaySalesCount} invoice${todaySalesCount === 1 ? '' : 's'} · avg ${fmt(todaySales / todaySalesCount)}`
+        : 'No invoices today';
 
-      const trendEl = document.getElementById('kpi-today-sales-trend');
+      const salesTrendEl = document.getElementById('kpi-today-sales-trend');
       if (yestSales > 0) {
         const pct = ((todaySales - yestSales) / yestSales) * 100;
         const up = pct >= 0;
-        trendEl.className = 'kpi-trend ' + (Math.abs(pct) < 0.5 ? 'flat' : (up ? 'up' : 'down'));
-        trendEl.innerHTML = `<i class="fas fa-arrow-${up ? 'up' : 'down'}"></i> ${Math.abs(pct).toFixed(1)}% vs yesterday`;
+        salesTrendEl.className = 'kpi-trend ' + (Math.abs(pct) < 0.5 ? 'flat' : (up ? 'up' : 'down'));
+        salesTrendEl.innerHTML = `<i class="fas fa-arrow-${up ? 'up' : 'down'}"></i> ${Math.abs(pct).toFixed(1)}% vs yesterday`;
       } else if (todaySales > 0) {
-        trendEl.className = 'kpi-trend up';
-        trendEl.innerHTML = '<i class="fas fa-arrow-up"></i> First sale since yesterday';
+        salesTrendEl.className = 'kpi-trend up';
+        salesTrendEl.innerHTML = '<i class="fas fa-arrow-up"></i> First sale since yesterday';
       } else {
-        trendEl.className = 'kpi-trend flat';
-        trendEl.innerHTML = '<i class="fas fa-minus"></i> No sales yet';
+        salesTrendEl.className = 'kpi-trend flat';
+        salesTrendEl.innerHTML = '<i class="fas fa-minus"></i> No sales yet';
       }
 
-      // Today's Collection
+      // ── Today's Collection card ──
       document.getElementById('kpi-today-collection').innerText = fmt(todayCollection);
-      document.getElementById('kpi-today-collection-sub').innerText =
-        `${todayCollectionCount} payment transaction${todayCollectionCount === 1 ? '' : 's'}`;
-      const modesArr = Object.entries(modesToday).map(([m, a]) => `${m}: ${fmtCompact(a)}`);
-      document.getElementById('kpi-today-modes').innerText = modesArr.join(' • ') || 'No collections yet';
+      document.getElementById('kpi-today-collection-sub').innerText = todayCollectionCount > 0
+        ? `${todayCollectionCount} payment${todayCollectionCount === 1 ? '' : 's'} received`
+        : 'No payments received';
 
-      // Outstanding
+      const collTrendEl = document.getElementById('kpi-today-collection-trend');
+      if (yestCollection > 0) {
+        const pct = ((todayCollection - yestCollection) / yestCollection) * 100;
+        const up = pct >= 0;
+        collTrendEl.className = 'kpi-trend ' + (Math.abs(pct) < 0.5 ? 'flat' : (up ? 'up' : 'down'));
+        collTrendEl.innerHTML = `<i class="fas fa-arrow-${up ? 'up' : 'down'}"></i> ${Math.abs(pct).toFixed(1)}% vs yesterday`;
+      } else if (todayCollection > 0) {
+        collTrendEl.className = 'kpi-trend up';
+        collTrendEl.innerHTML = '<i class="fas fa-check"></i> Collection received';
+      } else {
+        collTrendEl.className = 'kpi-trend flat';
+        collTrendEl.innerHTML = '<i class="fas fa-minus"></i> No collections yet';
+      }
+
+      // ── Outstanding card ──
       document.getElementById('kpi-outstanding').innerText = fmt(totalOutstanding);
       document.getElementById('kpi-outstanding-sub').innerText =
-        `${outstandingInvoices} invoice${outstandingInvoices === 1 ? '' : 's'} • ${outstandingCustomers.size} customer${outstandingCustomers.size === 1 ? '' : 's'}`;
+        `${outstandingInvoices} invoice${outstandingInvoices === 1 ? '' : 's'} · ${outstandingCustomers.size} customer${outstandingCustomers.size === 1 ? '' : 's'}`;
 
-      // Stock — value & weight are totals across all pieces
+      const outTrendEl = document.getElementById('kpi-outstanding-trend');
+      if (overdueCount > 0) {
+        outTrendEl.className = 'kpi-trend down';
+        outTrendEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${overdueCount} overdue 30d+`;
+      } else if (outstandingInvoices > 0) {
+        outTrendEl.className = 'kpi-trend flat';
+        outTrendEl.innerHTML = '<i class="fas fa-clock"></i> All within 30 days';
+      } else {
+        outTrendEl.className = 'kpi-trend up';
+        outTrendEl.innerHTML = '<i class="fas fa-check"></i> All clear';
+      }
+
+      // ── Stock card ──
       document.getElementById('kpi-stock-value').innerText = fmt(stockValue);
-      document.getElementById('kpi-stock-sub').innerText =
-        `${totalPcs} pc${totalPcs === 1 ? '' : 's'} in stock`;
-      document.getElementById('kpi-stock-weight').innerText =
-        `Gold ${goldWt.toFixed(3)} g • Silver ${silverWt.toFixed(3)} g`;
+      document.getElementById('kpi-stock-sub').innerText = `${totalPcs} pc${totalPcs === 1 ? '' : 's'} in stock`;
 
-      // Notification
+      const stockTrendEl = document.getElementById('kpi-stock-trend');
+      stockTrendEl.className = 'kpi-trend flat';
+      stockTrendEl.innerHTML = `<i class="fas fa-coins"></i> Gold ${goldWt.toFixed(3)}g · Silver ${silverWt.toFixed(3)}g`;
+
+      // Notification badge
       const notifBadge = document.getElementById('notif-badge');
       if (outstandingCustomers.size > 0) {
         notifBadge.innerText = outstandingCustomers.size;
@@ -759,17 +999,16 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       FINANCIAL SUMMARY
+       FINANCIAL SUMMARY (3 pills, all-time)
        ═══════════════════════════════════════════════════════════ */
     function renderFinancial() {
       let totalInvoiced = 0;
       CTX.invoices.forEach(inv => totalInvoiced += toNum(inv.total));
 
-      let totalCollected = 0, totalAdvances = 0;
+      let totalCollected = 0;
       CTX.transactions.forEach(t => {
         const amt = toNum(t.amount);
         if (t.type === 'Payment' || t.type === 'Advance') totalCollected += amt;
-        if (t.type === 'Advance') totalAdvances += amt;
       });
 
       let totalOutstanding = 0;
@@ -777,10 +1016,167 @@
         if (CTX.invoiceDue[inv.id] > 0) totalOutstanding += CTX.invoiceDue[inv.id];
       });
 
+      const collectedPct = totalInvoiced > 0 ? (totalCollected / totalInvoiced) * 100 : 0;
+      const outstandingPct = totalInvoiced > 0 ? (totalOutstanding / totalInvoiced) * 100 : 0;
+
       document.getElementById('fin-invoiced').innerText    = fmt(totalInvoiced);
       document.getElementById('fin-collected').innerText   = fmt(totalCollected);
       document.getElementById('fin-outstanding').innerText = fmt(totalOutstanding);
-      document.getElementById('fin-advances').innerText    = fmt(totalAdvances);
+
+      document.getElementById('fin-invoiced-sub').innerText =
+        `${CTX.invoices.length} invoice${CTX.invoices.length === 1 ? '' : 's'} total`;
+      document.getElementById('fin-collected-sub').innerText =
+        `${collectedPct.toFixed(1)}% of invoiced`;
+      document.getElementById('fin-outstanding-sub').innerText =
+        `${outstandingPct.toFixed(1)}% pending`;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       PERIOD PERFORMANCE + TOP CUSTOMERS + PAYMENT MODES
+       ═══════════════════════════════════════════════════════════ */
+    function renderPeriodPerformance() {
+      const range = getPeriodRange(currentPeriod);
+
+      document.querySelectorAll('.period-chip').forEach(b => {
+        b.classList.toggle('active', b.dataset.period === currentPeriod);
+      });
+
+      let salesTotal = 0, salesCount = 0;
+      const seenCustomers = new Set();
+      CTX.invoices.forEach(inv => {
+        if (!inPeriod(inv.date, range)) return;
+        salesTotal += toNum(inv.total);
+        salesCount++;
+        if (inv.customerId) seenCustomers.add(inv.customerId);
+        else if (inv.customer) seenCustomers.add('name:' + inv.customer);
+      });
+
+      let collTotal = 0, collCount = 0;
+      CTX.transactions.forEach(t => {
+        if (t.type !== 'Payment' && t.type !== 'Advance') return;
+        if (!inPeriod(t.date, range)) return;
+        collTotal += toNum(t.amount);
+        collCount++;
+      });
+
+      const avg = salesCount > 0 ? salesTotal / salesCount : 0;
+
+      document.getElementById('perf-sales').innerText = fmt(salesTotal);
+      document.getElementById('perf-sales-sub').innerText = `${salesCount} invoice${salesCount === 1 ? '' : 's'} in ${range.label.toLowerCase()}`;
+
+      document.getElementById('perf-collection').innerText = fmt(collTotal);
+      document.getElementById('perf-collection-sub').innerText = `${collCount} payment${collCount === 1 ? '' : 's'}`;
+
+      document.getElementById('perf-avg').innerText = fmt(avg);
+      document.getElementById('perf-avg-sub').innerText = salesCount > 0
+        ? `across ${salesCount} invoice${salesCount === 1 ? '' : 's'}`
+        : 'No invoices';
+
+      document.getElementById('perf-customers').innerText = seenCustomers.size;
+      document.getElementById('perf-customers-sub').innerText =
+        seenCustomers.size === 1 ? 'customer served' : 'customers served';
+
+      document.getElementById('top-cust-period-label').innerText = range.label;
+      document.getElementById('pay-modes-period-label').innerText = range.label;
+
+      renderTopCustomers(range);
+      renderPaymentModes(range);
+    }
+
+    function renderTopCustomers(range) {
+      const body = document.getElementById('top-customers-body');
+      const byCustomer = {};
+
+      CTX.invoices.forEach(inv => {
+        if (!inPeriod(inv.date, range)) return;
+        const key = inv.customerId || ('name:' + (inv.customer || 'Unknown'));
+        if (!byCustomer[key]) {
+          byCustomer[key] = { name: inv.customer || 'Unknown', total: 0, count: 0 };
+        }
+        byCustomer[key].total += toNum(inv.total);
+        byCustomer[key].count++;
+      });
+
+      const list = Object.values(byCustomer).sort((a, b) => b.total - a.total).slice(0, 5);
+
+      if (list.length === 0) {
+        body.innerHTML = `<div class="dash-empty"><i class="fas fa-users"></i>No customer activity in this period</div>`;
+        return;
+      }
+
+      body.innerHTML = list.map((c, i) => {
+        const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        return `
+          <div class="top-cust-row">
+            <div class="top-cust-rank ${rankClass}">${i + 1}</div>
+            <div class="top-cust-info">
+              <div class="top-cust-name">${escapeHtml(c.name)}</div>
+              <div class="top-cust-meta">${c.count} invoice${c.count === 1 ? '' : 's'}</div>
+            </div>
+            <div class="top-cust-amount">${fmt(c.total)}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderPaymentModes(range) {
+      const body = document.getElementById('payment-modes-body');
+      const modes = { Cash: 0, UPI: 0, Card: 0, 'Bank Transfer': 0 };
+      let total = 0;
+
+      CTX.transactions.forEach(t => {
+        if (t.type !== 'Payment' && t.type !== 'Advance') return;
+        if (!inPeriod(t.date, range)) return;
+        if (Array.isArray(t.modes) && t.modes.length > 0) {
+          t.modes.forEach(m => {
+            if (!m || !m.mode) return;
+            const amt = toNum(m.amount);
+            modes[m.mode] = (modes[m.mode] || 0) + amt;
+            total += amt;
+          });
+        } else {
+          const modeStr = t.mode || 'Cash';
+          const amt = toNum(t.amount);
+          const parts = modeStr.split('+').map(s => s.trim()).filter(Boolean);
+          if (parts.length > 1) {
+            modes[parts[0]] = (modes[parts[0]] || 0) + amt;
+          } else {
+            modes[modeStr] = (modes[modeStr] || 0) + amt;
+          }
+          total += amt;
+        }
+      });
+
+      const entries = Object.entries(modes).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+
+      if (entries.length === 0 || total <= 0) {
+        body.innerHTML = `<div class="dash-empty"><i class="fas fa-wallet"></i>No payments in this period</div>`;
+        return;
+      }
+
+      const colorClass = (mode) => {
+        if (mode === 'Cash') return 'cash';
+        if (mode === 'UPI') return 'upi';
+        if (mode === 'Card') return 'card';
+        if (mode === 'Bank Transfer') return 'bank';
+        return 'other';
+      };
+
+      body.innerHTML = entries.map(([mode, amount]) => {
+        const pct = (amount / total) * 100;
+        return `
+          <div class="mode-bar-item">
+            <div class="mode-bar-header">
+              <div>
+                <span class="mode-bar-name">${escapeHtml(mode)}</span>
+                <span class="mode-bar-pct">${pct.toFixed(1)}%</span>
+              </div>
+              <div class="mode-bar-amount">${fmt(amount)}</div>
+            </div>
+            <div class="mode-bar-track">
+              <div class="mode-bar-fill ${colorClass(mode)}" style="width: ${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -1052,6 +1448,15 @@
       });
     }
 
+    function setupPeriodChips() {
+      document.querySelectorAll('.period-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          currentPeriod = chip.dataset.period;
+          renderPeriodPerformance();
+        });
+      });
+    }
+
     function setupNotif() {
       document.getElementById('notif-btn').addEventListener('click', () => {
         document.getElementById('alerts-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1064,6 +1469,7 @@
     function renderAll() {
       renderKPIs();
       renderFinancial();
+      renderPeriodPerformance();
       renderChart(CTX.chartDays);
       renderRecentInvoices();
       renderRecentPayments();
@@ -1077,6 +1483,7 @@
         loadData();
         renderAll();
         setupChartTabs();
+        setupPeriodChips();
         setupNotif();
 
         window.addEventListener('pageshow', () => {
@@ -1085,7 +1492,7 @@
         });
       } catch (err) {
         console.error('Dashboard init error:', err);
-        document.querySelectorAll('.kpi-value, .fin-pill-value').forEach(el => {
+        document.querySelectorAll('.kpi-value, .fin-pill-value, .perf-value').forEach(el => {
           if (!el.innerText || el.innerText === '₹0') el.innerText = '—';
         });
       }
