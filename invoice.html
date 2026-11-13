@@ -85,9 +85,6 @@
         .items-table th:nth-child(11) { width: 10%;  }
         .items-table th:nth-child(12) { width: 5%;   }
 
-        /* ═══════════════════════════════════════════════════════
-           PURITY DROPDOWN
-           ═══════════════════════════════════════════════════════ */
         .purity-combo { width: 100%; }
         .purity-trigger {
             width: 100%; padding: 5px 18px 5px 6px;
@@ -177,6 +174,14 @@
         .grand-total-row { border-top: 2px solid var(--navy); margin-top: 12px; padding-top: 12px; font-weight: 800; font-size: 16px; color: var(--navy); }
         .words-box { background: var(--pastel-champagne); padding: 12px; margin-top: 10px; font-size: 12px; font-weight: 700; border-left: 4px solid var(--gold); color: var(--navy); border-radius: 0 4px 4px 0; }
 
+        .gst-type-select {
+            padding: 4px 6px; font-size: 12px;
+            border: 1px solid #cbd2de; border-radius: 4px;
+            background: white; color: var(--navy);
+            font-family: var(--font-body); cursor: pointer;
+        }
+        .gst-type-select:focus { outline: none; border-color: var(--gold); }
+
         .signature-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 30px 0 15px; padding-top: 15px; }
         .sign-box { border-top: 1px solid var(--navy); padding: 15px; text-align: center; font-size: 12px; font-weight: 600; color: var(--navy); }
 
@@ -192,9 +197,6 @@
 
         .edit-hint { font-size: 0.72rem; color: #6b7b94; margin: 4px 0 0; padding: 6px 10px; background: #FFF9EE; border-left: 2px solid var(--gold); border-radius: 0 4px 4px 0; }
 
-        /* ═══════════════════════════════════════════════════════════════
-           PRINT LAYOUT
-           ═══════════════════════════════════════════════════════════════ */
         @media print {
             @page { size: A4 portrait; margin: 8mm; }
             html, body { width: 100% !important; height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
@@ -333,6 +335,7 @@
         gems: { label: 'Gems Stone', qualities: [{ value: 'ordinary', label: 'Ordinary' }] }
     };
     const TUNCH_OPTIONS = ['50', '60', '70', '80', '92.5'];
+    const SELLER_STATE = 'Bihar';
 
     let appData = { invoices: [], customers: [], goldRates: {}, rateConfig: {} };
     let itemsData = [];
@@ -341,6 +344,7 @@
     let lastLedgerEdit = 'paid';
     let activePurityTrigger = null;
     let purityFocusedIndex = -1;
+    let lastGstBreakdown = { cgst: 0, sgst: 0, igst: 0, total: 0 };
 
     function deriveRateConfigFromMetalPrices(mp) {
         mp = mp || {};
@@ -612,7 +616,6 @@
         updateRateHint(tr.cells[6], info);
         updateWeightCellLabels(tr, row);
 
-        // Auto-switch making type: Gold → percentage, everything else → fixed
         const isGold = isGoldPurityKey(newKey);
         const desiredMakingType = isGold ? 'percentage' : 'fixed';
         if (row.makingType !== desiredMakingType) {
@@ -636,7 +639,6 @@
         recalcModalTotals();
     }
 
-    /* ─── Global listeners for dropdown ─── */
     document.addEventListener('mousedown', (e) => {
         const panel = document.getElementById('purityPanel');
         if (!panel.classList.contains('open')) return;
@@ -676,6 +678,50 @@
     });
 
     /* ═══════════════════════════════════════════════════════
+       GST TYPE AUTO-DETECT
+       ═══════════════════════════════════════════════════════ */
+    function autoDetectGstType() {
+        const pos = (document.getElementById('modalPlaceSupply')?.value || '').trim().toLowerCase();
+        const gstTypeEl = document.getElementById('modalGstType');
+        if (!gstTypeEl) return;
+        if (!pos || pos === SELLER_STATE.toLowerCase()) gstTypeEl.value = 'intra';
+        else gstTypeEl.value = 'inter';
+    }
+
+    window.onPlaceSupplyChange = function () {
+        autoDetectGstType();
+        recalcModalTotals();
+    };
+
+    window.onGstNoChange = function () {
+        const el = document.getElementById('modalCustGst');
+        if (!el) return;
+        el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15);
+    };
+
+    function updateGstVisibility() {
+        const showGst = isGstInvoice;
+        const gstType = document.getElementById('modalGstType')?.value || 'intra';
+
+        ['gst-tax-section', 'gst-type-row', 'gst-amount-row'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = showGst ? 'flex' : 'none';
+        });
+
+        const custGstRow = document.getElementById('rowCustGst');
+        if (custGstRow) custGstRow.style.display = showGst ? 'flex' : 'none';
+
+        const cgstRow = document.getElementById('cgst-row');
+        const sgstRow = document.getElementById('sgst-row');
+        const igstRow = document.getElementById('igst-row');
+        const showIntra = showGst && gstType === 'intra';
+        const showInter = showGst && gstType === 'inter';
+        if (cgstRow) cgstRow.style.display = showIntra ? 'flex' : 'none';
+        if (sgstRow) sgstRow.style.display = showIntra ? 'flex' : 'none';
+        if (igstRow) igstRow.style.display = showInter ? 'flex' : 'none';
+    }
+
+    /* ═══════════════════════════════════════════════════════
        INVOICE BODY
        ═══════════════════════════════════════════════════════ */
     window.toggleInvoiceType = function () {
@@ -683,17 +729,14 @@
         const vn = document.querySelector('.vendor-name');
         const vd = document.getElementById('vendor-gst-details');
         const h  = document.querySelector('.estimate-h2');
-        const gts = document.getElementById('gst-tax-section');
         if (isGstInvoice) {
             if (vn) vn.innerText = "SWARN JYOTI JEWELLERS - GST Tax Invoice";
             if (h)  h.innerText = "TAX INVOICE";
             if (vd) vd.innerHTML = `<strong>Sold By:</strong> SWARN JYOTI JEWELLERS<br><strong>Address:</strong> Soni Gali, Sasamusa, Gopalganj, Bihar - 841505<br><strong>GSTIN:</strong> 10CQAPS4738P1ZH | <strong>PAN:</strong> 10CQAPS4738P`;
-            if (gts) gts.style.display = 'flex';
         } else {
             if (vn) vn.innerText = "SWARN JYOTI JEWELLERS - Rough Invoice";
             if (h)  h.innerText = "ROUGH INVOICE";
             if (vd) vd.innerHTML = `<strong>Sold By:</strong> SWARN JYOTI JEWELLERS<br><strong>Address:</strong> Soni Gali, Sasamusa, Gopalganj, Bihar - 841505`;
-            if (gts) gts.style.display = 'none';
         }
         recalcModalTotals();
     };
@@ -728,6 +771,7 @@
                     <div class="meta-row" id="rowPhone"><div class="meta-label">Phone Number</div><div class="meta-value"><input type="tel" id="modalCustPhone" maxlength="10" placeholder="10 digit mobile" onchange="onPhoneChange()"><span class="print-text" id="printCustPhone"></span></div></div>
                     <div class="meta-row" id="rowPan"><div class="meta-label">PAN Number</div><div class="meta-value"><input type="text" id="modalCustPan" placeholder="ABCDE1234F"><span class="print-text" id="printCustPan"></span></div></div>
                     <div class="meta-row" id="rowAadhar"><div class="meta-label">Aadhar Number</div><div class="meta-value"><input type="text" id="modalCustAadhar" placeholder="12 digit number" maxlength="12"><span class="print-text" id="printCustAadhar"></span></div></div>
+                    <div class="meta-row" id="rowCustGst"><div class="meta-label">Customer GSTIN</div><div class="meta-value"><input type="text" id="modalCustGst" placeholder="e.g. 10ABCDE1234F1Z5" maxlength="15" oninput="onGstNoChange()"><span class="print-text" id="printCustGst"></span></div></div>
                 </div>
                 <div class="meta-box"><div class="meta-title">Shipping Details</div>
                     <div class="meta-row"><div class="meta-label">Date</div><div class="meta-value"><input type="text" id="modalBillDate" value="${today}" readonly style="background:#f0f0f0; font-weight:600;"><span class="print-text" id="printBillDate"></span></div></div>
@@ -740,7 +784,7 @@
                     </div></div>
                     <div class="meta-row no-print"><div class="meta-label">Paid Amount (₹)</div><div class="meta-value"><input type="number" id="modalPaidAmount" value="0" step="1" oninput="syncLedgerAmounts('paid')"></div></div>
                     <div class="meta-row no-print"><div class="meta-label">Due Amount (₹)</div><div class="meta-value"><input type="number" id="modalDueAmount" value="0" step="1" oninput="syncLedgerAmounts('due')"></div></div>
-                    <div class="meta-row" id="rowPlace"><div class="meta-label">Place of Supply</div><div class="meta-value"><input type="text" id="modalPlaceSupply" placeholder="Enter State"><span class="print-text" id="printPlaceSupply"></span></div></div>
+                    <div class="meta-row" id="rowPlace"><div class="meta-label">Place of Supply</div><div class="meta-value"><input type="text" id="modalPlaceSupply" placeholder="Enter State" oninput="onPlaceSupplyChange()"><span class="print-text" id="printPlaceSupply"></span></div></div>
                     <div class="meta-row" id="rowDiscount"><div class="meta-label">Discount (₹)</div><div class="meta-value"><input type="number" id="modalDiscount" value="0" step="1" oninput="recalcModalTotals()"><span class="print-text" id="printDiscount"></span></div></div>
                 </div>
             </div>
@@ -761,8 +805,37 @@
                     <div class="tax-row"><span>Total Hallmark (₹) :</span><span id="modalTotalHM">₹0.00</span></div>
                     <div class="tax-row"><span>Sub Total :</span><span id="modalSubTotal">₹0.00</span></div>
                     <div class="tax-row" id="printRowDiscount"><span>Discount :</span><span id="modalDiscountShow">₹0.00</span></div>
-                    <div class="tax-row" id="gst-tax-section" style="display:flex; align-items:center; gap:10px;"><span>GST Rate :</span><input type="number" id="modalGstRate" value="3" step="0.1" style="width:60px; padding:4px;" oninput="recalcModalTotals()"><span class="screen-only">%</span><span class="print-text" id="printGstRate">3%</span></div>
-                    <div class="tax-row" id="gst-amount-row"><span>Total GST Amount :</span><span id="modalGstAmount">₹0.00</span></div>
+
+                    <div class="tax-row" id="gst-tax-section" style="display:flex; align-items:center; gap:10px;">
+                        <span>GST Rate :</span>
+                        <input type="number" id="modalGstRate" value="3" step="0.1" style="width:60px; padding:4px;" oninput="recalcModalTotals()">
+                        <span class="screen-only">%</span>
+                        <span class="print-text" id="printGstRate">3%</span>
+                    </div>
+
+                    <div class="tax-row" id="gst-type-row" style="display:flex; align-items:center; gap:10px;">
+                        <span>GST Type :</span>
+                        <select id="modalGstType" class="gst-type-select" onchange="recalcModalTotals()">
+                            <option value="intra">Intra-State (CGST + SGST)</option>
+                            <option value="inter">Inter-State (IGST)</option>
+                        </select>
+                        <span class="print-text" id="printGstType"></span>
+                    </div>
+
+                    <div class="tax-row" id="cgst-row" style="display:none;">
+                        <span id="cgstLabel">CGST @ 1.5% :</span>
+                        <span id="modalCgst">₹0.00</span>
+                    </div>
+                    <div class="tax-row" id="sgst-row" style="display:none;">
+                        <span id="sgstLabel">SGST @ 1.5% :</span>
+                        <span id="modalSgst">₹0.00</span>
+                    </div>
+                    <div class="tax-row" id="igst-row" style="display:none;">
+                        <span id="igstLabel">IGST @ 3% :</span>
+                        <span id="modalIgst">₹0.00</span>
+                    </div>
+
+                    <div class="tax-row" id="gst-amount-row"><span>Total GST :</span><span id="modalGstAmount">₹0.00</span></div>
                     <div class="tax-row grand-total-row"><span>GRAND TOTAL :</span><span id="modalGrandTotal">₹0.00</span></div>
                 </div>
             </div>
@@ -806,7 +879,6 @@
             const tr = tbody.insertRow();
             tr.insertCell().innerText = i + 1;
 
-            // Item description
             const tdDesc = tr.insertCell();
             const inpDesc = document.createElement('input');
             inpDesc.type = 'text'; inpDesc.value = row.itemDesc || ''; inpDesc.placeholder = 'Item name';
@@ -815,7 +887,6 @@
             inpDesc.oninput = (e) => { row.itemDesc = e.target.value; descPrint.innerText = row.itemDesc; recalcModalTotals(); };
             tdDesc.appendChild(inpDesc); tdDesc.appendChild(descPrint);
 
-            // Purity dropdown
             const tdPur = tr.insertCell();
             const combo = document.createElement('div');
             combo.className = 'purity-combo no-print';
@@ -838,7 +909,6 @@
             purPrint.innerText = row.purityLabel || getPurityLabel(ck);
             tdPur.appendChild(combo); tdPur.appendChild(purPrint);
 
-            // Gross Wt
             const tdGr = tr.insertCell();
             const inpGr = document.createElement('input');
             inpGr.type = 'number'; inpGr.step = '0.01'; inpGr.value = row.grossWt || 0;
@@ -848,7 +918,6 @@
             inpGr.oninput = (e) => { row.grossWt = parseFloat(e.target.value) || 0; grPrint.innerText = row.grossWt.toFixed(3); recalcModalTotals(); };
             tdGr.appendChild(inpGr); tdGr.appendChild(grPrint);
 
-            // Stone Wt
             const tdSt = tr.insertCell();
             const inpSt = document.createElement('input');
             inpSt.type = 'number'; inpSt.step = '0.01'; inpSt.value = row.stoneWt || 0;
@@ -858,11 +927,9 @@
             inpSt.oninput = (e) => { row.stoneWt = parseFloat(e.target.value) || 0; stPrint.innerText = row.stoneWt.toFixed(3); recalcModalTotals(); };
             tdSt.appendChild(inpSt); tdSt.appendChild(stPrint);
 
-            // Net Wt (computed)
             const tdNet = tr.insertCell(); tdNet.style.fontWeight = 'bold';
             tdNet.innerText = (row.netWt || 0).toFixed(3);
 
-            // Rate
             const tdRate = tr.insertCell();
             const inpRate = document.createElement('input');
             inpRate.type = 'number'; inpRate.step = '0.01'; inpRate.value = row.ratePerGram || 0;
@@ -877,7 +944,6 @@
             tdRate.appendChild(inpRate); tdRate.appendChild(ratePrint);
             updateRateHint(tdRate, row.rateSnapshot || getRateFromConfig(row.purityKey));
 
-            // Making type
             const tdMType = tr.insertCell();
             const selType = document.createElement('select');
             const optP = document.createElement('option'); optP.value = 'percentage'; optP.innerText = 'Gold %';
@@ -901,7 +967,6 @@
             };
             tdMType.appendChild(selType); tdMType.appendChild(typePrintSpan);
 
-            // Making value
             const tdMVal = tr.insertCell();
             const inpMake = document.createElement('input');
             inpMake.type = 'number'; inpMake.step = '0.1';
@@ -918,7 +983,6 @@
             };
             tdMVal.appendChild(inpMake); tdMVal.appendChild(valPrintSpan);
 
-            // Hallmark
             const tdHM = tr.insertCell();
             const inpHM = document.createElement('input');
             inpHM.type = 'number'; inpHM.step = '1'; inpHM.value = row.hmAmount || 0; inpHM.placeholder = '₹';
@@ -927,13 +991,11 @@
             inpHM.oninput = (e) => { row.hmAmount = parseFloat(e.target.value) || 0; hmPrint.innerText = '₹' + (row.hmAmount || 0); recalcModalTotals(); };
             tdHM.appendChild(inpHM); tdHM.appendChild(hmPrint);
 
-            // Total
             const tdTotal = tr.insertCell(); tdTotal.className = 'total-cell';
             const tval = row.rowTotal || 0;
             const ft = '₹' + tval.toFixed(2);
             tdTotal.innerHTML = `<span class="screen-only" style="font-weight:800;">${ft}</span><span class="print-text" style="font-weight:800;">${ft}</span>`;
 
-            // Delete
             const tdDel = tr.insertCell();
             const delBtn = document.createElement('button');
             delBtn.type = 'button'; delBtn.innerText = '✕'; delBtn.className = 'delete-row-btn';
@@ -978,14 +1040,38 @@
 
         const discount = parseFloat(document.getElementById('modalDiscount')?.value) || 0;
         const taxableAmount = Math.max(0, subTotal - discount);
-        let gstAmount = 0;
+
+        let cgstAmt = 0, sgstAmt = 0, igstAmt = 0, gstAmount = 0;
+        let gstRate = 0;
+        let gstType = 'intra';
         if (isGstInvoice) {
-            const gstRate = parseFloat(document.getElementById('modalGstRate')?.value) || 0;
-            gstAmount = taxableAmount * (gstRate / 100);
-            document.getElementById('modalGstAmount').innerText = '₹' + gstAmount.toFixed(2);
-        } else {
-            document.getElementById('modalGstAmount').innerText = '₹0.00';
+            gstRate = parseFloat(document.getElementById('modalGstRate')?.value) || 0;
+            gstType = document.getElementById('modalGstType')?.value || 'intra';
+            if (gstType === 'intra') {
+                cgstAmt = taxableAmount * (gstRate / 200);
+                sgstAmt = cgstAmt;
+                gstAmount = cgstAmt + sgstAmt;
+            } else {
+                igstAmt = taxableAmount * (gstRate / 100);
+                gstAmount = igstAmt;
+            }
+            const halfRate = (gstRate / 2).toFixed(2);
+            const fullRate = gstRate.toFixed(2);
+            const cgstLabel = document.getElementById('cgstLabel');
+            const sgstLabel = document.getElementById('sgstLabel');
+            const igstLabel = document.getElementById('igstLabel');
+            if (cgstLabel) cgstLabel.innerText = `CGST @ ${halfRate}% :`;
+            if (sgstLabel) sgstLabel.innerText = `SGST @ ${halfRate}% :`;
+            if (igstLabel) igstLabel.innerText = `IGST @ ${fullRate}% :`;
+            const cgstEl = document.getElementById('modalCgst');
+            const sgstEl = document.getElementById('modalSgst');
+            const igstEl = document.getElementById('modalIgst');
+            if (cgstEl) cgstEl.innerText = '₹' + cgstAmt.toFixed(2);
+            if (sgstEl) sgstEl.innerText = '₹' + sgstAmt.toFixed(2);
+            if (igstEl) igstEl.innerText = '₹' + igstAmt.toFixed(2);
         }
+        lastGstBreakdown = { cgst: cgstAmt, sgst: sgstAmt, igst: igstAmt, total: gstAmount };
+
         const grandTotal = taxableAmount + gstAmount;
 
         document.getElementById('modalTotalNetVal').innerText = '₹' + totalNetVal.toFixed(2);
@@ -993,6 +1079,7 @@
         document.getElementById('modalTotalHM').innerText = '₹' + totalHM.toFixed(2);
         document.getElementById('modalSubTotal').innerText = '₹' + subTotal.toFixed(2);
         document.getElementById('modalDiscountShow').innerText = '₹' + discount.toFixed(2);
+        document.getElementById('modalGstAmount').innerText = '₹' + gstAmount.toFixed(2);
         document.getElementById('modalGrandTotal').innerText = '₹' + grandTotal.toFixed(2);
         document.getElementById('modalAmountWords').innerText = numToWords(Math.floor(grandTotal));
 
@@ -1019,6 +1106,8 @@
                 if (ps) ps.textContent = formatted;
             }
         }
+
+        updateGstVisibility();
     }
 
     window.onPhoneChange = function () {
@@ -1035,6 +1124,9 @@
             document.getElementById('modalCustAddress').value = cust.address || '';
             document.getElementById('modalCustPan').value = cust.pan || '';
             document.getElementById('modalCustAadhar').value = cust.aadhar || '';
+            if (cust.gstin) {
+                document.getElementById('modalCustGst').value = cust.gstin;
+            }
         }
     };
 
@@ -1065,6 +1157,19 @@
         const grv = document.getElementById('modalGstRate').value || '0';
         document.getElementById('printGstRate').innerText = grv + '%';
 
+        /* ── NEW: Customer GSTIN + GST type for print ── */
+        const gstinVal = (document.getElementById('modalCustGst')?.value || '').trim();
+        const printCustGstEl = document.getElementById('printCustGst');
+        if (printCustGstEl) printCustGstEl.innerText = gstinVal;
+
+        const gstTypeVal = document.getElementById('modalGstType')?.value || 'intra';
+        const printGstTypeEl = document.getElementById('printGstType');
+        if (printGstTypeEl) {
+            printGstTypeEl.innerText = gstTypeVal === 'inter'
+                ? 'Inter-State (IGST)'
+                : 'Intra-State (CGST + SGST)';
+        }
+
         const sm = [];
         document.querySelectorAll('#modalPaymentGroup input:checked').forEach(cb => sm.push(cb.value));
         document.getElementById('printPaymentDisplay').innerText = sm.join(', ') || 'Not Selected';
@@ -1074,6 +1179,7 @@
         togglePrintRow('rowAddress', !document.getElementById('modalCustAddress').value.trim());
         togglePrintRow('rowPhone', !document.getElementById('modalCustPhone').value.trim());
         togglePrintRow('rowPlace', !document.getElementById('modalPlaceSupply').value.trim());
+        togglePrintRow('rowCustGst', !gstinVal);
         togglePrintRow('rowPayment', sm.length === 0);
 
         const dv = parseFloat(document.getElementById('modalDiscount').value) || 0;
@@ -1088,10 +1194,6 @@
         });
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       SAVE — initial payment recorded on CREATE only, then synced
-              non-destructively on UPDATE (never touches subsequent)
-       ═══════════════════════════════════════════════════════════ */
     function reconcileLegacyPaymentIfNeeded(invoiceId) {
         const data = DB.getData();
         const inv = (data.invoices || []).find(i => i.id === invoiceId);
@@ -1115,6 +1217,7 @@
     }
 
     function saveToDatabase(isSilent = false) {
+        recalcModalTotals();
         const custName = document.getElementById('modalCustName').value.trim();
         const custPhone = document.getElementById('modalCustPhone').value.trim();
         if (!custName) { if (!isSilent) showAlert("Please enter Customer Name.", "error"); return false; }
@@ -1134,12 +1237,22 @@
         const invoiceId = isUpdate ? currentEditingId : generateInvoiceId();
         const itemsSnapshot = JSON.parse(JSON.stringify(itemsData));
 
+        const custGstin = (document.getElementById('modalCustGst')?.value || '').trim().toUpperCase();
+        const gstTypeVal = document.getElementById('modalGstType')?.value || 'intra';
+
         const invoiceObj = {
             id: invoiceId, customer: custName, date: billDate, total: gt,
             type: isGstInvoice ? "GST Invoice" : "Rough Invoice",
             discount: parseFloat(document.getElementById('modalDiscount').value) || 0,
             placeOfSupply: document.getElementById('modalPlaceSupply').value,
             gstRate: parseFloat(document.getElementById('modalGstRate').value) || 0,
+            gstType: gstTypeVal,
+            gstBreakdown: {
+                cgst: lastGstBreakdown.cgst,
+                sgst: lastGstBreakdown.sgst,
+                igst: lastGstBreakdown.igst,
+                total: lastGstBreakdown.total
+            },
             paymentModes: paymentModes, items: itemsSnapshot,
             rateConfigSnapshot: {
                 updatedAt: appData.rateConfig?.updatedAt || null,
@@ -1149,7 +1262,8 @@
                 phone: custPhone,
                 address: document.getElementById('modalCustAddress').value,
                 pan: document.getElementById('modalCustPan').value,
-                aadhar: document.getElementById('modalCustAadhar').value
+                aadhar: document.getElementById('modalCustAadhar').value,
+                gstin: custGstin
             }
         };
 
@@ -1158,8 +1272,6 @@
                 DB.updateInvoice(currentEditingId, invoiceObj);
                 reconcileLegacyPaymentIfNeeded(currentEditingId);
 
-                // Sync initial payment so its amount matches "Paid Amount" field.
-                // Subsequent payments are preserved untouched by setInvoicePayment.
                 try {
                     const allTxs = DB.getInvoicePayments(currentEditingId) || [];
                     const initialTx = allTxs.find(t =>
@@ -1293,6 +1405,7 @@
                 document.getElementById('modalCustAddress').value = (inv.customerInfo && inv.customerInfo.address) || '';
                 document.getElementById('modalCustPan').value = (inv.customerInfo && inv.customerInfo.pan) || '';
                 document.getElementById('modalCustAadhar').value = (inv.customerInfo && inv.customerInfo.aadhar) || '';
+                document.getElementById('modalCustGst').value = (inv.customerInfo && inv.customerInfo.gstin) || '';
 
                 const savedDate = inv.date || new Date().toLocaleDateString('en-GB');
                 document.getElementById('modalBillDate').value = savedDate;
@@ -1301,13 +1414,17 @@
                 document.getElementById('modalDiscount').value = inv.discount || 0;
                 document.getElementById('modalGstRate').value = inv.gstRate || 3;
 
+                /* Restore GST type — fall back to auto-detect from saved place of supply */
+                const savedPos = (inv.placeOfSupply || '').trim().toLowerCase();
+                const inferredType = (!savedPos || savedPos === SELLER_STATE.toLowerCase()) ? 'intra' : 'inter';
+                document.getElementById('modalGstType').value = inv.gstType || inferredType;
+
                 if (inv.paymentModes && Array.isArray(inv.paymentModes)) {
                     document.querySelectorAll('#modalPaymentGroup input').forEach(cb => {
                         cb.checked = inv.paymentModes.includes(cb.value);
                     });
                 }
 
-                // Load paid / due — these are editable, backed by transaction history
                 const paidAmt = Number(inv.totalPaid) || 0;
                 const dueAmt = Math.max(0, (Number(inv.total) || 0) - paidAmt);
                 document.getElementById('modalPaidAmount').value = paidAmt;
